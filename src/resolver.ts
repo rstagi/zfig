@@ -1,4 +1,5 @@
 import type { ZodObject, ZodTypeAny } from "zod";
+import { isAbsolute, join } from "node:path";
 import { loadEnv } from "./loaders/env";
 import { loadSecretFile } from "./loaders/secretFile";
 import { ConfigError, formatValue } from "./errors";
@@ -6,6 +7,7 @@ import { ConfigError, formatValue } from "./errors";
 export interface ResolveOptions {
   fileValues?: Record<string, unknown>;
   env?: Record<string, string | undefined>;
+  secretsPath?: string;
 }
 
 interface KeyMeta {
@@ -41,28 +43,17 @@ function getMeta(schema: ZodTypeAny): KeyMeta | undefined {
   return { env, secretFile, sensitive, default: defaultValue } as KeyMeta;
 }
 
-function getNestedValue(obj: Record<string, unknown> | undefined, key: string): unknown {
-  if (!obj) return undefined;
-  return obj[key];
-}
-
 function resolveValue(
   schema: ZodTypeAny,
   path: string[],
   fileValues: Record<string, unknown> | undefined,
-  env: Record<string, string | undefined>
+  env: Record<string, string | undefined>,
+  secretsPath: string
 ): unknown {
   if (isZodObject(schema)) {
     const result: Record<string, unknown> = {};
-    const nestedFileValues = path.length === 0
-      ? fileValues
-      : path.reduce<unknown>((acc, key) => {
-          if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key];
-          return undefined;
-        }, fileValues) as Record<string, unknown> | undefined;
-
     for (const [key, childSchema] of Object.entries(schema.shape)) {
-      result[key] = resolveValue(childSchema, [...path, key], fileValues, env);
+      result[key] = resolveValue(childSchema, [...path, key], fileValues, env, secretsPath);
     }
     return result;
   }
@@ -92,7 +83,10 @@ function resolveValue(
   }
 
   if (value === undefined && meta?.secretFile !== undefined) {
-    const secretValue = loadSecretFile(meta.secretFile);
+    const secretPath = isAbsolute(meta.secretFile)
+      ? meta.secretFile
+      : join(secretsPath, meta.secretFile);
+    const secretValue = loadSecretFile(secretPath);
     if (secretValue !== undefined) {
       value = secretValue;
     }
@@ -131,6 +125,6 @@ export function resolve<T extends ZodObject<Record<string, ZodTypeAny>>>(
   schema: T,
   options: ResolveOptions = {}
 ): ReturnType<T["parse"]> {
-  const { fileValues, env = process.env } = options;
-  return resolveValue(schema, [], fileValues, env) as ReturnType<T["parse"]>;
+  const { fileValues, env = process.env, secretsPath = "/secrets" } = options;
+  return resolveValue(schema, [], fileValues, env, secretsPath) as ReturnType<T["parse"]>;
 }

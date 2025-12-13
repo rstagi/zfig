@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { writeFileSync, unlinkSync, mkdtempSync, rmdirSync } from "node:fs";
+import { writeFileSync, mkdtempSync, rmdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { loadSecretFile } from "./secretFile";

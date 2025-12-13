@@ -148,4 +148,22 @@ describe("resolve()", () => {
       expect(() => resolve(s, { env: { PORT: "not-a-number" } })).toThrow(ConfigError);
     });
   });
+
+  describe("secretsPath", () => {
+    it("resolves relative secretFile paths against secretsPath", () => {
+      const s = schema({ pass: key({ type: z.string(), secretFile: "secret" }) });
+      expect(resolve(s, { secretsPath: tempDir, env: {} })).toEqual({ pass: "file-secret" });
+    });
+
+    it("absolute secretFile paths ignore secretsPath", () => {
+      const s = schema({ pass: key({ type: z.string(), secretFile: secretFilePath }) });
+      expect(resolve(s, { secretsPath: "/other/path", env: {} })).toEqual({ pass: "file-secret" });
+    });
+
+    it("defaults secretsPath to /secrets", () => {
+      const s = schema({ pass: key({ type: z.string(), secretFile: "mysecret", default: "fallback" }) });
+      // /secrets/mysecret won't exist, should fall back to default
+      expect(resolve(s, { env: {} })).toEqual({ pass: "fallback" });
+    });
+  });
 });
