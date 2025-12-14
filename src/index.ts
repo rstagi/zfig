@@ -11,4 +11,4 @@ export type {
 } from "./types";
 export type { ResolveOptions } from "./resolver";
 export type { ParseOptions } from "./parser";
-export type { ServerLike, Service, RunOptions } from "./startup";
+export type { ServerLike, Service, RunOptions, StartupOptions } from "./startup";

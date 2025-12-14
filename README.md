@@ -103,11 +103,14 @@ key({
 
 The `startup()` helper provides a consistent pattern for server lifecycle management with graceful shutdown.
 
+### Auto-run (recommended)
+
+Pass `import.meta` to auto-run when file is executed directly:
+
 ```typescript
 // app.ts
 import { startup, schema, key } from "confts";
 import { z } from "zod";
-import express from "express";
 
 const configSchema = schema({
   port: key({ type: z.number(), env: "PORT", default: 3000 }),
@@ -115,21 +118,26 @@ const configSchema = schema({
 });
 
 export default startup(configSchema, async (config) => {
-  await db.connect(config.dbUrl); // async init supported
+  await db.connect(config.dbUrl);
   const app = express();
   app.get("/health", (req, res) => res.send("ok"));
   return app;
-});
+}, { meta: import.meta });
+
+// node app.ts     → auto-runs server
+// import from... → just exports service (for tests)
 ```
 
-### Running with CLI
+### Manual check (alternative)
 
-```bash
-# Requires Node 24+ with native TypeScript support
-npx confts-start app.ts
+```typescript
+const service = startup(configSchema, factory);
 
-# Or in package.json
-"start": "confts-start app.ts"
+if (import.meta.url === `file://${process.argv[1]}`) {
+  service.run();
+}
+
+export default service;
 ```
 
 ### Testing
@@ -144,9 +152,12 @@ const app = await service.create({ dbUrl: "test://..." });
 
 ### API
 
-`startup(schema, factory)` returns:
+`startup(schema, factory, options?)` returns:
 - `create(overrides?)` - builds server without listening (for tests)
 - `run(options?)` - builds server, listens, handles graceful shutdown
+
+`startup()` options:
+- `meta` - pass `import.meta` to enable auto-run when main module
 
 `run()` options:
 - `port` - override config port

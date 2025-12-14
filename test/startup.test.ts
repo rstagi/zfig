@@ -185,4 +185,44 @@ describe("startup()", () => {
       expect(mockServer.closeCalled).toBe(true);
     });
   });
+
+  describe("auto-run with meta option", () => {
+    it("does not auto-run when meta not provided", async () => {
+      const mockServer = createMockServer();
+      startup(configSchema, () => mockServer);
+
+      await new Promise((r) => setTimeout(r, 10));
+
+      // Server should not have started
+      expect(mockServer.listenCalled).toBe(false);
+    });
+
+    it("does not auto-run when meta.url does not match main module", async () => {
+      const mockServer = createMockServer();
+      const fakeMeta = { url: "file:///some/other/file.ts" } as ImportMeta;
+
+      startup(configSchema, () => mockServer, { meta: fakeMeta });
+
+      await new Promise((r) => setTimeout(r, 10));
+
+      expect(mockServer.listenCalled).toBe(false);
+    });
+
+    it("auto-runs when meta.url matches process.argv[1]", async () => {
+      const mockServer = createMockServer();
+      // Create a meta that matches current process.argv[1]
+      const mainPath = process.argv[1];
+      const fakeMeta = { url: `file://${mainPath}` } as ImportMeta;
+
+      startup(configSchema, () => mockServer, { meta: fakeMeta });
+
+      await new Promise((r) => setTimeout(r, 20));
+
+      expect(mockServer.listenCalled).toBe(true);
+
+      // Cleanup
+      process.emit("SIGTERM", "SIGTERM");
+      await new Promise((r) => setTimeout(r, 10));
+    });
+  });
 });
