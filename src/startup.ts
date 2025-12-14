@@ -9,10 +9,7 @@ export interface ListenOptions {
 }
 
 export interface ServerLike {
-  listen(
-    portOrOptions: number | ListenOptions,
-    callback?: () => void
-  ): void | Promise<unknown>;
+  listen(options: ListenOptions, callback?: () => void): void | Promise<unknown>;
   close(callback?: (err?: Error) => void): void;
 }
 
@@ -91,8 +88,8 @@ export function startup<
         process.once("SIGTERM", shutdown);
         process.once("SIGINT", shutdown);
 
-        const listenArg: number | ListenOptions = host !== undefined ? { port, host } : port;
-        const maybePromise = server.listen(listenArg, () => {
+        const listenOptions: ListenOptions = host !== undefined ? { port, host } : { port };
+        const maybePromise = server.listen(listenOptions, () => {
           runOptions?.onReady?.();
         });
 

@@ -1,18 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { z } from "zod";
+import { createServer } from "node:http";
+import fastify from "fastify";
+import express from "express";
 import { schema, key } from "../src/schema";
 import { startup } from "../src/startup";
 
-// Mock server implementation (callback-based, Express-style)
+// Mock server implementation (callback-based)
 function createMockServer() {
   const listeners: Array<() => void> = [];
   return {
     listenCalled: false,
-    listenPort: null as number | null,
+    listenOptions: null as { port: number; host?: string } | null,
     closeCalled: false,
-    listen(port: number, cb?: () => void) {
+    listen(options: { port: number; host?: string }, cb?: () => void) {
       this.listenCalled = true;
-      this.listenPort = port;
+      this.listenOptions = options;
       if (cb) listeners.push(cb);
       // Simulate async ready
       setTimeout(() => listeners.forEach((l) => l()), 0);
@@ -137,7 +140,7 @@ describe("startup()", () => {
       await new Promise((r) => setTimeout(r, 10));
 
       expect(mockServer.listenCalled).toBe(true);
-      expect(mockServer.listenPort).toBe(3000);
+      expect(mockServer.listenOptions).toEqual({ port: 3000 });
 
       // Cleanup: simulate shutdown
       process.emit("SIGTERM", "SIGTERM");
@@ -152,7 +155,7 @@ describe("startup()", () => {
 
       await new Promise((r) => setTimeout(r, 10));
 
-      expect(mockServer.listenPort).toBe(8080);
+      expect(mockServer.listenOptions).toEqual({ port: 8080 });
 
       process.emit("SIGTERM", "SIGTERM");
       await runPromise;
@@ -224,7 +227,7 @@ describe("startup()", () => {
       const mockServer = {
         listenCalled: false,
         closeCalled: false,
-        listen(): Promise<string> {
+        listen(_options: { port: number; host?: string }): Promise<string> {
           this.listenCalled = true;
           return Promise.reject(new Error("EADDRINUSE"));
         },
@@ -298,5 +301,72 @@ describe("startup()", () => {
     // Note: Full CJS auto-run test requires actual CJS environment
     // The implementation uses `require.main === options.module` which works in CJS
     // but require.main is undefined in ESM test environment
+  });
+
+  describe("Fastify integration", () => {
+    it("works with real Fastify server via create()", async () => {
+      const service = startup(configSchema, () => {
+        const app = fastify();
+        app.get("/ping", async () => "pong");
+        return app;
+      });
+
+      const server = await service.create();
+      expect(server).toBeDefined();
+      await server.close();
+    });
+
+    it("works with real Fastify server via run() with host", async () => {
+      const onReady = vi.fn();
+      const service = startup(configSchema, () => {
+        const app = fastify();
+        app.get("/ping", async () => "pong");
+        return app;
+      });
+
+      const runPromise = service.run({ host: "127.0.0.1", onReady });
+
+      await new Promise((r) => setTimeout(r, 50));
+      expect(onReady).toHaveBeenCalledOnce();
+
+      process.emit("SIGTERM", "SIGTERM");
+      await runPromise;
+    });
+
+    it("works with real Fastify server via run() without host", async () => {
+      const onReady = vi.fn();
+      const service = startup(configSchema, () => {
+        const app = fastify();
+        app.get("/ping", async () => "pong");
+        return app;
+      });
+
+      const runPromise = service.run({ onReady });
+
+      await new Promise((r) => setTimeout(r, 50));
+      expect(onReady).toHaveBeenCalledOnce();
+
+      process.emit("SIGTERM", "SIGTERM");
+      await runPromise;
+    });
+  });
+
+  describe("Express integration", () => {
+    it("works with Express via http.createServer", async () => {
+      const onReady = vi.fn();
+      const service = startup(configSchema, () => {
+        const app = express();
+        app.get("/ping", (_req, res) => res.send("pong"));
+        return createServer(app);
+      });
+
+      const runPromise = service.run({ onReady });
+
+      await new Promise((r) => setTimeout(r, 50));
+      expect(onReady).toHaveBeenCalledOnce();
+
+      process.emit("SIGTERM", "SIGTERM");
+      await runPromise;
+    });
   });
 });
