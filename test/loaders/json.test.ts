@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { writeFileSync, mkdtempSync, rmdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { loadJson } from "./json";
-import { ConfigError } from "../errors";
+import { loadJson } from "../../src/loaders/json";
+import { ConfigError } from "../../src/errors";
 
 describe("loadJson()", () => {
   let tempDir: string;

@@ -3,9 +3,9 @@ import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { z } from "zod";
-import { schema, key } from "./schema";
-import { resolve } from "./resolver";
-import { ConfigError } from "./errors";
+import { schema, key } from "../src/schema";
+import { resolve } from "../src/resolver";
+import { ConfigError } from "../src/errors";
 
 describe("resolve()", () => {
   let tempDir: string;
@@ -164,6 +164,55 @@ describe("resolve()", () => {
       const s = schema({ pass: key({ type: z.string(), secretFile: "mysecret", default: "fallback" }) });
       // /secrets/mysecret won't exist, should fall back to default
       expect(resolve(s, { env: {} })).toEqual({ pass: "fallback" });
+    });
+  });
+
+  describe("toString() redaction", () => {
+    it("redacts sensitive values in toString()", () => {
+      const s = schema({
+        host: key({ type: z.string(), default: "localhost" }),
+        password: key({ type: z.string(), default: "secret123", sensitive: true }),
+      });
+      const config = resolve(s, { env: {} });
+      const str = config.toString();
+      expect(str).toContain("localhost");
+      expect(str).not.toContain("secret123");
+      expect(str).toContain("[REDACTED]");
+    });
+
+    it("redacts nested sensitive values", () => {
+      const s = schema({
+        db: {
+          host: key({ type: z.string(), default: "localhost" }),
+          password: key({ type: z.string(), default: "dbpass", sensitive: true }),
+        },
+      });
+      const config = resolve(s, { env: {} });
+      const str = config.toString();
+      expect(str).toContain("localhost");
+      expect(str).not.toContain("dbpass");
+      expect(str).toContain("[REDACTED]");
+    });
+
+    it("works with template literals", () => {
+      const s = schema({
+        apiKey: key({ type: z.string(), default: "key-12345", sensitive: true }),
+      });
+      const config = resolve(s, { env: {} });
+      const str = `${config}`;
+      expect(str).not.toContain("key-12345");
+      expect(str).toContain("[REDACTED]");
+    });
+
+    it("shows non-sensitive values normally", () => {
+      const s = schema({
+        host: key({ type: z.string(), default: "localhost" }),
+        port: key({ type: z.number(), default: 3000 }),
+      });
+      const config = resolve(s, { env: {} });
+      const str = config.toString();
+      expect(str).toContain("localhost");
+      expect(str).toContain("3000");
     });
   });
 });

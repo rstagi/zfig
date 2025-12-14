@@ -44,6 +44,23 @@ function getMeta(schema: ZodTypeAny): KeyMeta | undefined {
   return { env, secretFile, sensitive, default: defaultValue } as KeyMeta;
 }
 
+function redactValue(schema: ZodTypeAny, value: unknown): unknown {
+  if (isZodObject(schema) && value && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, childSchema] of Object.entries(schema.shape)) {
+      result[key] = redactValue(childSchema, (value as Record<string, unknown>)[key]);
+    }
+    return result;
+  }
+
+  const meta = getMeta(schema);
+  if (meta?.sensitive) {
+    return "[REDACTED]";
+  }
+
+  return value;
+}
+
 function resolveValue(
   schema: ZodTypeAny,
   path: string[],
@@ -127,5 +144,13 @@ export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
   options: ResolveOptions = {}
 ): InferSchema<S> {
   const { fileValues, env = process.env, secretsPath = "/secrets" } = options;
-  return resolveValue(schema, [], fileValues, env, secretsPath) as InferSchema<S>;
+  const result = resolveValue(schema, [], fileValues, env, secretsPath) as InferSchema<S>;
+
+  Object.defineProperty(result, "toString", {
+    value: () => JSON.stringify(redactValue(schema, result), null, 2),
+    enumerable: false,
+    writable: false,
+  });
+
+  return result;
 }

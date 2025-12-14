@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { loadEnv } from "./env";
+import { loadEnv } from "../../src/loaders/env";
 
 describe("loadEnv()", () => {
   it("returns value when env var exists", () => {

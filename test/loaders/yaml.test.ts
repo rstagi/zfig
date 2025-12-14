@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { writeFileSync, mkdtempSync, rmdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { loadYaml } from "./yaml";
-import { ConfigError } from "../errors";
+import { loadYaml } from "../../src/loaders/yaml";
+import { ConfigError } from "../../src/errors";
 
 describe("loadYaml()", () => {
   let tempDir: string;

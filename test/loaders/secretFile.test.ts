@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { writeFileSync, mkdtempSync, rmdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { loadSecretFile } from "./secretFile";
+import { loadSecretFile } from "../../src/loaders/secretFile";
 
 describe("loadSecretFile()", () => {
   let tempDir: string;

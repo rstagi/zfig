@@ -3,9 +3,9 @@ import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { z } from "zod";
-import { schema, key } from "./schema";
-import { parse } from "./parser";
-import { ConfigError } from "./errors";
+import { schema, key } from "../src/schema";
+import { parse } from "../src/parser";
+import { ConfigError } from "../src/errors";
 
 describe("parse()", () => {
   let tempDir: string;

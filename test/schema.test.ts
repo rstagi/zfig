@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
-import { schema, key } from "./schema";
+import { schema, key } from "../src/schema";
 
 describe("schema()", () => {
   it("returns Zod object for nested definition with key()", () => {

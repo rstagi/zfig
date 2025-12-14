@@ -1,8 +1,8 @@
 import { describe, it, expectTypeOf } from "vitest";
 import { z } from "zod";
-import { schema, key } from "./schema";
-import { parse } from "./parser";
-import type { InferSchema } from "./types";
+import { schema, key } from "../src/schema";
+import { parse } from "../src/parser";
+import type { InferSchema } from "../src/types";
 
 describe("type inference", () => {
   describe("literal types", () => {

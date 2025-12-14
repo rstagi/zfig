@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ConfigError, formatValue } from "./errors";
+import { ConfigError, formatValue } from "../src/errors";
 
 describe("ConfigError", () => {
   it("stores path and sensitive flag", () => {
