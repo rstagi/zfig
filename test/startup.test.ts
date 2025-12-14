@@ -225,4 +225,23 @@ describe("startup()", () => {
       await new Promise((r) => setTimeout(r, 10));
     });
   });
+
+  describe("auto-run with module option (CJS)", () => {
+    it("does not auto-run when module does not match require.main", async () => {
+      const mockServer = createMockServer();
+      // In ESM, require.main is undefined, so any module passed won't match
+      const fakeModule = { filename: "/some/other/file.js" } as NodeModule;
+
+      startup(configSchema, () => mockServer, { module: fakeModule });
+
+      await new Promise((r) => setTimeout(r, 10));
+
+      // Since require.main is undefined in ESM, this should not auto-run
+      expect(mockServer.listenCalled).toBe(false);
+    });
+
+    // Note: Full CJS auto-run test requires actual CJS environment
+    // The implementation uses `require.main === options.module` which works in CJS
+    // but require.main is undefined in ESM test environment
+  });
 });

@@ -103,12 +103,12 @@ key({
 
 The `startup()` helper provides a consistent pattern for server lifecycle management with graceful shutdown.
 
-### Auto-run (recommended)
+### Auto-run (ESM)
 
 Pass `import.meta` to auto-run when file is executed directly:
 
 ```typescript
-// app.ts
+// app.ts (ESM)
 import { startup, schema, key } from "confts";
 import { z } from "zod";
 
@@ -128,16 +128,40 @@ export default startup(configSchema, async (config) => {
 // import from... → just exports service (for tests)
 ```
 
+### Auto-run (CommonJS)
+
+Pass `module` for CJS projects:
+
+```javascript
+// app.cjs (CommonJS)
+const { startup, schema, key } = require("confts");
+const { z } = require("zod");
+
+const configSchema = schema({
+  port: key({ type: z.number(), env: "PORT", default: 3000 }),
+});
+
+module.exports = startup(configSchema, (config) => {
+  const app = require("express")();
+  return app;
+}, { module });
+
+// node app.cjs    → auto-runs server
+// require(...)    → just exports service (for tests)
+```
+
 ### Manual check (alternative)
 
 ```typescript
+// ESM
 const service = startup(configSchema, factory);
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  service.run();
-}
-
+if (import.meta.url === `file://${process.argv[1]}`) service.run();
 export default service;
+
+// CJS
+const service = startup(configSchema, factory);
+if (require.main === module) service.run();
+module.exports = service;
 ```
 
 ### Testing
@@ -157,7 +181,8 @@ const app = await service.create({ dbUrl: "test://..." });
 - `run(options?)` - builds server, listens, handles graceful shutdown
 
 `startup()` options:
-- `meta` - pass `import.meta` to enable auto-run when main module
+- `meta` - pass `import.meta` for ESM auto-run
+- `module` - pass `module` for CJS auto-run
 
 `run()` options:
 - `port` - override config port

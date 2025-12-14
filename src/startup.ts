@@ -25,12 +25,19 @@ export interface RunOptions {
 
 export interface StartupOptions {
   meta?: ImportMeta;
+  module?: NodeModule;
 }
 
-function isMainModule(meta: ImportMeta): boolean {
-  const callerPath = fileURLToPath(meta.url);
-  const mainPath = resolvePath(process.argv[1]);
-  return callerPath === mainPath;
+function isMainModule(options: StartupOptions): boolean {
+  if (options.meta) {
+    const callerPath = fileURLToPath(options.meta.url);
+    const mainPath = resolvePath(process.argv[1]);
+    return callerPath === mainPath;
+  }
+  if (options.module) {
+    return require.main === options.module;
+  }
+  return false;
 }
 
 export function startup<
@@ -81,8 +88,8 @@ export function startup<
     },
   };
 
-  // Auto-run if meta provided and this is the main module
-  if (options?.meta && isMainModule(options.meta)) {
+  // Auto-run if meta or module provided and this is the main module
+  if (options && (options.meta || options.module) && isMainModule(options)) {
     service.run();
   }
 
