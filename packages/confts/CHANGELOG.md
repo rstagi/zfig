@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.2
+
+### Patch Changes
+
+- 2242feb: Init changeset github actions
+
 ## 0.9.1
 
 ### Patch Changes
