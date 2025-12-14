@@ -58,6 +58,16 @@ function isMainModule(options: StartupOptions): boolean {
   return false;
 }
 
+function loadConfigFile(configPath: string): Record<string, unknown> | undefined {
+  const ext = extname(configPath).toLowerCase();
+  if (ext === ".yaml" || ext === ".yml") {
+    return loadYaml(configPath);
+  } else if (ext === ".json") {
+    return loadJson(configPath);
+  }
+  return undefined;
+}
+
 // Overload: startup(schema, factory)
 export function startup<
   S extends ConftsSchema<Record<string, unknown>>,
@@ -76,16 +86,6 @@ export function startup<
   options: StartupOptions,
   factory: (config: InferSchema<S>) => T | Promise<T>
 ): Service<S, T>;
-
-function loadConfigFile(configPath: string): Record<string, unknown> | undefined {
-  const ext = extname(configPath).toLowerCase();
-  if (ext === ".yaml" || ext === ".yml") {
-    return loadYaml(configPath);
-  } else if (ext === ".json") {
-    return loadJson(configPath);
-  }
-  return undefined;
-}
 
 // Implementation
 export function startup<
