@@ -22,7 +22,7 @@
     "test:watch": "vitest",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "postversion": "node scripts/update-changelog.js"
+    "version": "node scripts/update-changelog.js"
   },
   "keywords": [
     "config",
