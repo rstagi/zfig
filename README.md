@@ -92,6 +92,24 @@ const config = resolve(schema, {
 
 Supports `.yaml`, `.yml`, and `.json` files.
 
+### `getSources(config)`
+
+Get which source each config value came from (useful for debugging/logging):
+
+```typescript
+import { resolveValues, getSources } from "confts";
+
+const config = resolveValues(schema, options);
+const sources = getSources(config);
+// { host: "env", port: "default", "db.password": "secretFile" }
+
+// Or use toSourceString() for logging
+console.log(config.toSourceString());
+// '{"host":"env","port":"default","db.password":"secretFile"}'
+```
+
+Source types: `"override"` | `"env"` | `"secretFile"` | `"file"` | `"initial"` | `"default"`
+
 ## Sensitive Values
 
 Mark fields as `sensitive: true` to redact values in error messages:
