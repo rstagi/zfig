@@ -40,10 +40,12 @@ const config = parse(configSchema, { configPath: "./config.yaml" });
 
 Values are resolved in priority order:
 
-1. **Environment variable** (`env`)
-2. **Secret file** (`secretFile`) - reads file content
-3. **Config file** (YAML/JSON)
-4. **Default value** (`default`)
+1. **Override** (`override` in resolve options) - highest priority
+2. **Environment variable** (`env`)
+3. **Secret file** (`secretFile`) - reads file content
+4. **Config file** (YAML/JSON)
+5. **Initial values** (`initialValues` in resolve options)
+6. **Default value** (`default`)
 
 ## API
 
@@ -117,12 +119,12 @@ const configSchema = schema({
   dbUrl: key({ type: z.string(), env: "DATABASE_URL" }),
 });
 
-export default startup(configSchema, async (config) => {
+export default startup(configSchema, { meta: import.meta }, async (config) => {
   await db.connect(config.dbUrl);
   const app = express();
   app.get("/health", (req, res) => res.send("ok"));
   return app;
-}, { meta: import.meta });
+});
 
 // node app.ts     → auto-runs server
 // import from... → just exports service (for tests)
@@ -141,10 +143,10 @@ const configSchema = schema({
   port: key({ type: z.number(), env: "PORT", default: 3000 }),
 });
 
-module.exports = startup(configSchema, (config) => {
+module.exports = startup(configSchema, { module }, (config) => {
   const app = require("express")();
   return app;
-}, { module });
+});
 
 // node app.cjs    → auto-runs server
 // require(...)    → just exports service (for tests)
@@ -170,25 +172,38 @@ module.exports = service;
 // app.test.ts
 import service from "./app";
 
-const app = await service.create({ dbUrl: "test://..." });
+const app = await service.create({ override: { dbUrl: "test://..." } });
 // use supertest(app) - no listen() called
 ```
 
 ### API
 
-`startup(schema, factory, options?)` returns:
-- `create(overrides?)` - builds server without listening (for tests)
+Signatures:
+- `startup(schema, factory)` - basic, no auto-run
+- `startup(schema, options, factory)` - with options
+
+Returns:
+- `create(options?)` - builds server without listening (for tests)
 - `run(options?)` - builds server, listens, handles graceful shutdown
 
-`startup()` options:
+`StartupOptions`:
 - `meta` - pass `import.meta` for ESM auto-run
 - `module` - pass `module` for CJS auto-run
+- `initialValues` - base config values (lowest priority)
+- `configPath` - path to config file
+- `env` - custom env object (default: process.env)
+- `secretsPath` - base path for secret files
+- `override` - override values (highest priority)
 
-`run()` options:
+`create(options?)` accepts same resolution options as `StartupOptions`.
+
+`run(options?)`:
 - `port` - override config port
+- `host` - override host
 - `onReady` - callback when listening
 - `onShutdown` - callback on shutdown
 - `shutdownTimeout` - ms before force exit (default: 30000)
+- `configOverride` - override config values
 
 ## License
 
