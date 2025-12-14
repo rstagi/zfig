@@ -101,7 +101,7 @@ export function startup<
   const factory = isOptionsSignature ? maybeFactory! : factoryOrOptions;
 
   const resolveConfig = (overrides?: ResolveParams, overrideOnly?: Record<string, unknown>) => {
-    const params = overrides ?? options;
+    const params = { ...options, ...overrides };
     const fileValues = params.configPath ? loadConfigFile(params.configPath) : undefined;
     return resolve(configSchema, {
       initialValues: params.initialValues,

@@ -191,27 +191,28 @@ describe("startup()", () => {
       expect(receivedConfig).toEqual({ port: 3000, host: "0.0.0.0" });
     });
 
-    it("accepts resolve options that replace startup options", async () => {
+    it("create options merge with startup options", async () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
-      const service = startup(configSchema, { override: { port: 1111 } }, (config) => {
+      const service = startup(configSchema, { override: { port: 1111 }, initialValues: { host: "initial-host" } }, (config) => {
         receivedConfig = config;
         return mockServer;
       });
-      // create() options replace startup's override
+      // create() options merge - override wins for port, initialValues kept from startup
       await service.create({ override: { port: 2222 } });
-      expect(receivedConfig).toEqual({ port: 2222, host: "localhost" });
+      expect(receivedConfig).toEqual({ port: 2222, host: "initial-host" });
     });
 
-    it("create options.env replaces startup env", async () => {
+    it("create options.env merges with startup options", async () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
-      const service = startup(configSchema, { env: { HOST: "startup-host" } }, (config) => {
+      const service = startup(configSchema, { env: { HOST: "startup-host" }, override: { port: 8888 } }, (config) => {
         receivedConfig = config;
         return mockServer;
       });
+      // env from create wins, override from startup kept
       await service.create({ env: { HOST: "create-host" } });
-      expect(receivedConfig).toEqual({ port: 3000, host: "create-host" });
+      expect(receivedConfig).toEqual({ port: 8888, host: "create-host" });
     });
   });
 
