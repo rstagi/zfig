@@ -1,4 +1,3 @@
-import type { ZodObject, ZodTypeAny } from "zod";
 import { extname } from "node:path";
 import { loadYaml } from "./loaders/yaml";
 import { loadJson } from "./loaders/json";

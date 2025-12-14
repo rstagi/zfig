@@ -47,6 +47,6 @@ export type ConftsSchema<D extends Record<string, unknown>> = ZodObject<
 /** Extract output type from schema */
 export type InferSchema<S> = S extends ConftsSchema<infer D>
   ? InferDefinition<D>
-  : S extends ZodObject<infer Shape>
+  : S extends ZodObject<infer _Shape>
     ? z.infer<S>
     : never;
