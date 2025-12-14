@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.3] - 2025-12-14
+- chore: fix changelog script
+- 0.5.2
+- fix: return server and config from create
+
 ## [0.5.2] - 2025-12-14
 - 0.5.2
 - fix: return server and config from create
