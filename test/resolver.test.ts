@@ -21,7 +21,7 @@ describe("resolve()", () => {
     rmSync(tempDir, { recursive: true });
   });
 
-  describe("resolution priority: env > secretFile > fileValues > default", () => {
+  describe("resolution priority: override > env > secretFile > fileValues > initialValues > default", () => {
     it("uses env var when present", () => {
       const s = schema({ host: key({ type: z.string(), env: "HOST", default: "default" }) });
       expect(resolve(s, { env: { HOST: "from-env" } })).toEqual({ host: "from-env" });
@@ -55,6 +55,56 @@ describe("resolve()", () => {
     it("fileValues overrides default", () => {
       const s = schema({ val: key({ type: z.string(), default: "default-loses" }) });
       expect(resolve(s, { fileValues: { val: "file-wins" }, env: {} })).toEqual({ val: "file-wins" });
+    });
+
+    it("uses initialValues when other sources missing", () => {
+      const s = schema({ val: key({ type: z.string() }) });
+      expect(resolve(s, { initialValues: { val: "from-initial" }, env: {} })).toEqual({ val: "from-initial" });
+    });
+
+    it("initialValues overrides default", () => {
+      const s = schema({ val: key({ type: z.string(), default: "default-loses" }) });
+      expect(resolve(s, { initialValues: { val: "initial-wins" }, env: {} })).toEqual({ val: "initial-wins" });
+    });
+
+    it("fileValues overrides initialValues", () => {
+      const s = schema({ val: key({ type: z.string() }) });
+      expect(resolve(s, { initialValues: { val: "initial-loses" }, fileValues: { val: "file-wins" }, env: {} })).toEqual({ val: "file-wins" });
+    });
+
+    it("env overrides initialValues", () => {
+      const s = schema({ val: key({ type: z.string(), env: "VAL" }) });
+      expect(resolve(s, { initialValues: { val: "initial-loses" }, env: { VAL: "env-wins" } })).toEqual({ val: "env-wins" });
+    });
+
+    it("initialValues works with nested schemas", () => {
+      const s = schema({ db: { host: key({ type: z.string() }) } });
+      expect(resolve(s, { initialValues: { db: { host: "initial-host" } }, env: {} })).toEqual({ db: { host: "initial-host" } });
+    });
+
+    it("override has highest priority", () => {
+      const s = schema({ val: key({ type: z.string(), env: "VAL", default: "default" }) });
+      expect(resolve(s, { override: { val: "override-wins" }, env: { VAL: "env-loses" } })).toEqual({ val: "override-wins" });
+    });
+
+    it("override beats env", () => {
+      const s = schema({ val: key({ type: z.string(), env: "VAL" }) });
+      expect(resolve(s, { override: { val: "override-wins" }, env: { VAL: "env-loses" } })).toEqual({ val: "override-wins" });
+    });
+
+    it("override beats fileValues", () => {
+      const s = schema({ val: key({ type: z.string() }) });
+      expect(resolve(s, { override: { val: "override-wins" }, fileValues: { val: "file-loses" }, env: {} })).toEqual({ val: "override-wins" });
+    });
+
+    it("override works with nested schemas", () => {
+      const s = schema({ db: { host: key({ type: z.string(), env: "DB_HOST" }) } });
+      expect(resolve(s, { override: { db: { host: "override-host" } }, env: { DB_HOST: "env-host" } })).toEqual({ db: { host: "override-host" } });
+    });
+
+    it("override can partially override nested schemas", () => {
+      const s = schema({ db: { host: key({ type: z.string(), env: "DB_HOST" }), port: key({ type: z.number(), default: 5432 }) } });
+      expect(resolve(s, { override: { db: { host: "override-host" } }, env: {} })).toEqual({ db: { host: "override-host", port: 5432 } });
     });
   });
 

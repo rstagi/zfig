@@ -6,9 +6,11 @@ import { ConfigError, formatValue } from "./errors";
 import type { ConftsSchema, InferSchema } from "./types";
 
 export interface ResolveOptions {
+  initialValues?: Record<string, unknown>;
   fileValues?: Record<string, unknown>;
   env?: Record<string, string | undefined>;
   secretsPath?: string;
+  override?: Record<string, unknown>;
 }
 
 interface KeyMeta {
@@ -64,14 +66,16 @@ function redactValue(schema: ZodTypeAny, value: unknown): unknown {
 function resolveValue(
   schema: ZodTypeAny,
   path: string[],
+  initialValues: Record<string, unknown> | undefined,
   fileValues: Record<string, unknown> | undefined,
   env: Record<string, string | undefined>,
-  secretsPath: string
+  secretsPath: string,
+  override: Record<string, unknown> | undefined
 ): unknown {
   if (isZodObject(schema)) {
     const result: Record<string, unknown> = {};
     for (const [key, childSchema] of Object.entries(schema.shape)) {
-      result[key] = resolveValue(childSchema, [...path, key], fileValues, env, secretsPath);
+      result[key] = resolveValue(childSchema, [...path, key], initialValues, fileValues, env, secretsPath, override);
     }
     return result;
   }
@@ -84,16 +88,30 @@ function resolveValue(
   const pathStr = path.join(".");
   const sensitive = meta?.sensitive ?? false;
 
-  // Get file value for this specific key
+  // Get nested values for this specific key path
+  const overrideValue = path.reduce<unknown>((acc, key) => {
+    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key];
+    return undefined;
+  }, override);
+
+  const initialValue = path.reduce<unknown>((acc, key) => {
+    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key];
+    return undefined;
+  }, initialValues);
+
   const fileValue = path.reduce<unknown>((acc, key) => {
     if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key];
     return undefined;
   }, fileValues);
 
-  // Resolution priority: env > secretFile > fileValues > default
+  // Resolution priority: override > env > secretFile > fileValues > initialValues > default
   let value: unknown;
 
-  if (meta?.env !== undefined) {
+  if (overrideValue !== undefined) {
+    value = overrideValue;
+  }
+
+  if (value === undefined && meta?.env !== undefined) {
     const envValue = loadEnv(meta.env, env);
     if (envValue !== undefined) {
       value = envValue;
@@ -112,6 +130,10 @@ function resolveValue(
 
   if (value === undefined && fileValue !== undefined) {
     value = fileValue;
+  }
+
+  if (value === undefined && initialValue !== undefined) {
+    value = initialValue;
   }
 
   if (value === undefined && meta?.default !== undefined) {
@@ -143,8 +165,8 @@ export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
   schema: S,
   options: ResolveOptions = {}
 ): InferSchema<S> {
-  const { fileValues, env = process.env, secretsPath = "/secrets" } = options;
-  const result = resolveValue(schema, [], fileValues, env, secretsPath) as InferSchema<S>;
+  const { initialValues, fileValues, env = process.env, secretsPath = "/secrets", override } = options;
+  const result = resolveValue(schema, [], initialValues, fileValues, env, secretsPath, override) as InferSchema<S>;
 
   Object.defineProperty(result, "toString", {
     value: () => JSON.stringify(redactValue(schema, result), null, 2),
