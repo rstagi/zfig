@@ -20,47 +20,20 @@ interface KeyMeta {
   default?: unknown;
 }
 
-function getDefType(schema: ZodTypeAny): string | undefined {
-  return (schema._zod?.def as { type?: string } | undefined)?.type;
-}
+export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
+  schema: S,
+  options: ResolveOptions = {}
+): InferSchema<S> {
+  const { initialValues, fileValues, env = process.env, secretsPath = "/secrets", override } = options;
+  const result = resolveValue(schema, [], initialValues, fileValues, env, secretsPath, override) as InferSchema<S>;
 
-function isZodObject(schema: ZodTypeAny): schema is ZodObject<Record<string, ZodTypeAny>> {
-  return getDefType(schema) === "object";
-}
+  Object.defineProperty(result, "toString", {
+    value: () => JSON.stringify(redactValue(schema, result), null, 2),
+    enumerable: false,
+    writable: false,
+  });
 
-function isZodLiteral(schema: ZodTypeAny): boolean {
-  return getDefType(schema) === "literal";
-}
-
-function getLiteralValue(schema: ZodTypeAny): unknown {
-  return (schema._zod?.def as { values?: unknown[] } | undefined)?.values?.[0];
-}
-
-function getMeta(schema: ZodTypeAny): KeyMeta | undefined {
-  const meta = schema.meta?.();
-  if (!meta || typeof meta !== "object") return undefined;
-  const { env, secretFile, sensitive, default: defaultValue } = meta as Record<string, unknown>;
-  if (env === undefined && secretFile === undefined && sensitive === undefined && defaultValue === undefined) {
-    return undefined;
-  }
-  return { env, secretFile, sensitive, default: defaultValue } as KeyMeta;
-}
-
-function redactValue(schema: ZodTypeAny, value: unknown): unknown {
-  if (isZodObject(schema) && value && typeof value === "object") {
-    const result: Record<string, unknown> = {};
-    for (const [key, childSchema] of Object.entries(schema.shape)) {
-      result[key] = redactValue(childSchema, (value as Record<string, unknown>)[key]);
-    }
-    return result;
-  }
-
-  const meta = getMeta(schema);
-  if (meta?.sensitive) {
-    return "[REDACTED]";
-  }
-
-  return value;
+  return result;
 }
 
 function resolveValue(
@@ -161,18 +134,45 @@ function resolveValue(
   return result.data;
 }
 
-export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
-  schema: S,
-  options: ResolveOptions = {}
-): InferSchema<S> {
-  const { initialValues, fileValues, env = process.env, secretsPath = "/secrets", override } = options;
-  const result = resolveValue(schema, [], initialValues, fileValues, env, secretsPath, override) as InferSchema<S>;
+function redactValue(schema: ZodTypeAny, value: unknown): unknown {
+  if (isZodObject(schema) && value && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, childSchema] of Object.entries(schema.shape)) {
+      result[key] = redactValue(childSchema, (value as Record<string, unknown>)[key]);
+    }
+    return result;
+  }
 
-  Object.defineProperty(result, "toString", {
-    value: () => JSON.stringify(redactValue(schema, result), null, 2),
-    enumerable: false,
-    writable: false,
-  });
+  const meta = getMeta(schema);
+  if (meta?.sensitive) {
+    return "[REDACTED]";
+  }
 
-  return result;
+  return value;
+}
+
+function isZodObject(schema: ZodTypeAny): schema is ZodObject<Record<string, ZodTypeAny>> {
+  return getDefType(schema) === "object";
+}
+
+function isZodLiteral(schema: ZodTypeAny): boolean {
+  return getDefType(schema) === "literal";
+}
+
+function getLiteralValue(schema: ZodTypeAny): unknown {
+  return (schema._zod?.def as { values?: unknown[] } | undefined)?.values?.[0];
+}
+
+function getMeta(schema: ZodTypeAny): KeyMeta | undefined {
+  const meta = schema.meta?.();
+  if (!meta || typeof meta !== "object") return undefined;
+  const { env, secretFile, sensitive, default: defaultValue } = meta as Record<string, unknown>;
+  if (env === undefined && secretFile === undefined && sensitive === undefined && defaultValue === undefined) {
+    return undefined;
+  }
+  return { env, secretFile, sensitive, default: defaultValue } as KeyMeta;
+}
+
+function getDefType(schema: ZodTypeAny): string | undefined {
+  return (schema._zod?.def as { type?: string } | undefined)?.type;
 }

@@ -46,28 +46,6 @@ export interface StartupOptions extends ResolveParams {
   module?: NodeModule;
 }
 
-function isMainModule(options: StartupOptions): boolean {
-  if (options.meta) {
-    const callerPath = fileURLToPath(options.meta.url);
-    const mainPath = resolvePath(process.argv[1]);
-    return callerPath === mainPath;
-  }
-  if (options.module) {
-    return require.main === options.module;
-  }
-  return false;
-}
-
-function loadConfigFile(configPath: string): Record<string, unknown> | undefined {
-  const ext = extname(configPath).toLowerCase();
-  if (ext === ".yaml" || ext === ".yml") {
-    return loadYaml(configPath);
-  } else if (ext === ".json") {
-    return loadJson(configPath);
-  }
-  return undefined;
-}
-
 // Overload: startup(schema, factory)
 export function startup<
   S extends ConftsSchema<Record<string, unknown>>,
@@ -164,4 +142,26 @@ export function startup<
   }
 
   return service;
+}
+
+function isMainModule(options: StartupOptions): boolean {
+  if (options.meta) {
+    const callerPath = fileURLToPath(options.meta.url);
+    const mainPath = resolvePath(process.argv[1]);
+    return callerPath === mainPath;
+  }
+  if (options.module) {
+    return require.main === options.module;
+  }
+  return false;
+}
+
+function loadConfigFile(configPath: string): Record<string, unknown> | undefined {
+  const ext = extname(configPath).toLowerCase();
+  if (ext === ".yaml" || ext === ".yml") {
+    return loadYaml(configPath);
+  } else if (ext === ".json") {
+    return loadJson(configPath);
+  }
+  return undefined;
 }

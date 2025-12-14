@@ -6,19 +6,17 @@ import {
   type ConftsSchema,
 } from "./types";
 
+export function schema<const D extends Record<string, unknown>>(
+  definition: D
+): ConftsSchema<D> {
+  return z.object(buildZodShape(definition)) as ConftsSchema<D>;
+}
+
 export function key<T extends ZodTypeAny>(config: KeyConfig<T>): MarkedKeyConfig<T> {
   return {
     ...config,
     [KEY_MARKER]: true,
   };
-}
-
-function isMarkedKey(value: unknown): value is MarkedKeyConfig {
-  return typeof value === "object" && value !== null && KEY_MARKER in value;
-}
-
-function isPrimitive(value: unknown): value is string | number | boolean {
-  return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
 }
 
 function buildZodShape(definition: Record<string, unknown>): Record<string, ZodTypeAny> {
@@ -43,8 +41,10 @@ function buildZodShape(definition: Record<string, unknown>): Record<string, ZodT
   return shape;
 }
 
-export function schema<const D extends Record<string, unknown>>(
-  definition: D
-): ConftsSchema<D> {
-  return z.object(buildZodShape(definition)) as ConftsSchema<D>;
+function isMarkedKey(value: unknown): value is MarkedKeyConfig {
+  return typeof value === "object" && value !== null && KEY_MARKER in value;
+}
+
+function isPrimitive(value: unknown): value is string | number | boolean {
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
 }
