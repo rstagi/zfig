@@ -42,5 +42,8 @@
   },
   "devDependencies": {
     "confts": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

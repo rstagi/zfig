@@ -46,5 +46,8 @@
   "devDependencies": {
     "confts": "workspace:*",
     "@confts/yaml-loader": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
