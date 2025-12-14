@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { writeFileSync, mkdtempSync, rmdirSync } from "node:fs";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { loadYaml } from "../../src/loaders/yaml";
-import { ConfigError } from "../../src/errors";
+import { ConfigError, getLoader } from "confts";
+import { loadYaml } from "../src";
 
 describe("loadYaml()", () => {
   let tempDir: string;
@@ -13,7 +13,7 @@ describe("loadYaml()", () => {
   });
 
   afterAll(() => {
-    rmdirSync(tempDir, { recursive: true });
+    rmSync(tempDir, { recursive: true });
   });
 
   it("returns parsed object from valid YAML", () => {
@@ -38,5 +38,18 @@ describe("loadYaml()", () => {
     const filePath = join(tempDir, "config.yml");
     writeFileSync(filePath, "key: value");
     expect(loadYaml(filePath)).toEqual({ key: "value" });
+  });
+});
+
+describe("auto-registration", () => {
+  // Registration happens at module load time (top-level import)
+  // The import at top of file already triggered registration
+
+  it("registers .yaml loader on import", () => {
+    expect(getLoader(".yaml")).toBe(loadYaml);
+  });
+
+  it("registers .yml loader on import", () => {
+    expect(getLoader(".yml")).toBe(loadYaml);
   });
 });

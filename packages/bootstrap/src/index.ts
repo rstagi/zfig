@@ -1,9 +1,7 @@
 import { resolve as resolvePath, extname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveValues } from "./values";
-import { loadYaml } from "./loaders/yaml";
-import { loadJson } from "./loaders/json";
-import type { ConftsSchema, InferSchema } from "./types";
+import { resolveValues, getLoader, getSupportedExtensions, ConfigError } from "confts";
+import type { ConftsSchema, InferSchema } from "confts";
 
 export interface ListenOptions {
   port: number;
@@ -158,10 +156,16 @@ function isMainModule(options: StartupOptions): boolean {
 
 function loadConfigFile(configPath: string): Record<string, unknown> | undefined {
   const ext = extname(configPath).toLowerCase();
-  if (ext === ".yaml" || ext === ".yml") {
-    return loadYaml(configPath);
-  } else if (ext === ".json") {
-    return loadJson(configPath);
+  const loader = getLoader(ext);
+
+  if (!loader) {
+    const supported = getSupportedExtensions().join(", ");
+    throw new ConfigError(
+      `Unsupported config file extension: ${ext}. Supported: ${supported || "none"}. Install @confts/yaml-loader for YAML support.`,
+      configPath,
+      false
+    );
   }
-  return undefined;
+
+  return loader(configPath);
 }

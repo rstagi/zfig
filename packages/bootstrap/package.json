@@ -1,0 +1,50 @@
+{
+  "name": "@confts/bootstrap",
+  "version": "0.9.0",
+  "description": "Server bootstrap helper for confts configuration library",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "config",
+    "confts",
+    "bootstrap",
+    "server"
+  ],
+  "author": "rstagi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rstagi/confts.git",
+    "directory": "packages/bootstrap"
+  },
+  "peerDependencies": {
+    "confts": "^0.9.0",
+    "@confts/yaml-loader": "^0.9.0"
+  },
+  "peerDependenciesMeta": {
+    "@confts/yaml-loader": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "confts": "workspace:*",
+    "@confts/yaml-loader": "workspace:*"
+  }
+}

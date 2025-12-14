@@ -4,38 +4,60 @@
 
 Dev-friendly TypeScript config library wrapping Zod with multi-source value resolution.
 
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| `confts` | Core - schema, field, resolve, value resolution |
+| `@confts/yaml-loader` | YAML file support (optional) |
+| `@confts/bootstrap` | Server lifecycle management (optional) |
+
 ## Installation
 
 ```bash
+# Core only (JSON config)
 npm install confts zod
+
+# With YAML support
+npm install confts @confts/yaml-loader zod
+
+# With server bootstrap
+npm install confts @confts/bootstrap zod
 ```
 
 ## Quick Start
 
 ```typescript
-import confts from "confts";
+import { schema, field, resolve } from "confts";
+import "@confts/yaml-loader"; // enables YAML support (side-effect import)
 import { z } from "zod";
 
-const configSchema = confts.schema({
+const configSchema = schema({
   appName: "my-app", // literal value
   someKey: {
-    publishableKey: confts.field({
+    publishableKey: field({
       type: z.string().nonempty(),
       env: "MY_PUBLISHABLE_KEY",
     }),
-    secretKey: confts.field({
+    secretKey: field({
       type: z.string().nonempty(),
       secretFile: "some-secret-file-name",
       sensitive: true,
     }),
     nested: {
-      someNestedKey: confts.field({ type: z.number(), env: "MY_VAR", default: 3000 }),
+      someNestedKey: field({ type: z.number(), env: "MY_VAR", default: 3000 }),
     },
   },
 });
 
-const config = confts.resolve(configSchema, { configPath: "./config.yaml" });
+const config = resolve(configSchema, { configPath: "./config.yaml" });
 // config is fully typed
+```
+
+**JSON-only** (no yaml-loader needed):
+```typescript
+import { schema, field, resolve } from "confts";
+const config = resolve(configSchema, { configPath: "./config.json" });
 ```
 
 ## Value Resolution
@@ -148,7 +170,11 @@ field({
 
 ## Server Bootstrap
 
-The `bootstrap()` helper provides a consistent pattern for server lifecycle management with graceful shutdown.
+The `bootstrap()` helper from `@confts/bootstrap` provides server lifecycle management with graceful shutdown.
+
+```bash
+npm install @confts/bootstrap
+```
 
 ### Auto-run (ESM)
 
@@ -156,15 +182,16 @@ Pass `import.meta` to auto-run when file is executed directly:
 
 ```typescript
 // app.ts (ESM)
-import confts from "confts";
+import { schema, field } from "confts";
+import { bootstrap } from "@confts/bootstrap";
 import { z } from "zod";
 
-const configSchema = confts.schema({
-  port: confts.field({ type: z.number(), env: "PORT", default: 3000 }),
-  dbUrl: confts.field({ type: z.string(), env: "DATABASE_URL" }),
+const configSchema = schema({
+  port: field({ type: z.number(), env: "PORT", default: 3000 }),
+  dbUrl: field({ type: z.string(), env: "DATABASE_URL" }),
 });
 
-export default confts.bootstrap(configSchema, { meta: import.meta }, async (config) => {
+export default bootstrap(configSchema, { meta: import.meta }, async (config) => {
   await db.connect(config.dbUrl);
   const app = express();
   app.get("/health", (req, res) => res.send("ok"));
@@ -175,50 +202,14 @@ export default confts.bootstrap(configSchema, { meta: import.meta }, async (conf
 // import from... → just exports service (for tests)
 ```
 
-### Auto-run (CommonJS)
-
-Pass `module` for CJS projects:
-
-```javascript
-// app.cjs (CommonJS)
-const confts = require("confts");
-const { z } = require("zod");
-
-const configSchema = confts.schema({
-  port: confts.field({ type: z.number(), env: "PORT", default: 3000 }),
-});
-
-module.exports = confts.bootstrap(configSchema, { module }, (config) => {
-  const app = require("express")();
-  return app;
-});
-
-// node app.cjs    → auto-runs server
-// require(...)    → just exports service (for tests)
-```
-
-### Manual check (alternative)
-
-```typescript
-// ESM
-const service = bootstrap(configSchema, factory);
-if (import.meta.url === `file://${process.argv[1]}`) service.run();
-export default service;
-
-// CJS
-const service = bootstrap(configSchema, factory);
-if (require.main === module) service.run();
-module.exports = service;
-```
-
 ### Testing
 
 ```typescript
 // app.test.ts
 import service from "./app";
 
-const app = await service.create({ override: { dbUrl: "test://..." } });
-// use supertest(app) - no listen() called
+const { server } = await service.create({ override: { dbUrl: "test://..." } });
+// use supertest(server) - no listen() called
 ```
 
 ### API
@@ -231,24 +222,32 @@ Returns:
 - `create(options?)` - builds server without listening (for tests)
 - `run(options?)` - builds server, listens, handles graceful shutdown
 
-`BootstrapOptions`:
-- `meta` - pass `import.meta` for ESM auto-run
-- `module` - pass `module` for CJS auto-run
-- `initialValues` - base config values (lowest priority)
-- `configPath` - path to config file
-- `env` - custom env object (default: process.env)
-- `secretsPath` - base path for secret files
-- `override` - override values (highest priority)
+## Migration from 0.9.x
 
-`create(options?)` accepts same resolution options as `BootstrapOptions`.
+### Breaking Changes
 
-`run(options?)`:
-- `port` - override config port
-- `host` - override host
-- `onReady` - callback when listening
-- `onShutdown` - callback on shutdown
-- `shutdownTimeout` - ms before force exit (default: 30000)
-- `configOverride` - override config values
+**YAML support now requires `@confts/yaml-loader`:**
+```typescript
+// Before (0.9.x)
+import { resolve } from "confts";
+resolve(schema, { configPath: "./config.yaml" }); // worked
+
+// After (0.10.x)
+import { resolve } from "confts";
+import "@confts/yaml-loader"; // required for YAML
+resolve(schema, { configPath: "./config.yaml" });
+```
+
+**`bootstrap()` moved to `@confts/bootstrap`:**
+```typescript
+// Before (0.9.x)
+import { bootstrap } from "confts";
+
+// After (0.10.x)
+import { bootstrap } from "@confts/bootstrap";
+```
+
+JSON config files work without extra packages.
 
 ## License
 

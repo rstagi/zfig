@@ -1,6 +1,5 @@
 import { extname } from "node:path";
-import { loadYaml } from "./loaders/yaml";
-import { loadJson } from "./loaders/json";
+import { getLoader, getSupportedExtensions } from "./loader-registry";
 import { resolveValues } from "./values";
 import { ConfigError } from "./errors";
 import type { ConftsSchema, InferSchema } from "./types";
@@ -27,19 +26,18 @@ export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
   }
 
   const ext = extname(configPath).toLowerCase();
-  let fileValues: Record<string, unknown> | undefined;
+  const loader = getLoader(ext);
 
-  if (ext === ".yaml" || ext === ".yml") {
-    fileValues = loadYaml(configPath);
-  } else if (ext === ".json") {
-    fileValues = loadJson(configPath);
-  } else {
+  if (!loader) {
+    const supported = getSupportedExtensions().join(", ");
     throw new ConfigError(
-      `Unsupported config file extension: ${ext}. Use .yaml, .yml, or .json`,
+      `Unsupported config file extension: ${ext}. Supported: ${supported || "none"}. Install @confts/yaml-loader for YAML support.`,
       configPath,
       false
     );
   }
+
+  const fileValues = loader(configPath);
 
   if (fileValues === undefined) {
     throw new ConfigError(

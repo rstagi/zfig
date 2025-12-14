@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { load } from "js-yaml";
-import { ConfigError } from "../errors";
+import { registerLoader, ConfigError } from "confts";
 
 export function loadYaml(path: string): Record<string, unknown> | undefined {
   let content: string;
@@ -20,3 +20,7 @@ export function loadYaml(path: string): Record<string, unknown> | undefined {
     );
   }
 }
+
+// Auto-register on import
+registerLoader(".yaml", loadYaml);
+registerLoader(".yml", loadYaml);

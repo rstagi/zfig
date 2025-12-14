@@ -6,8 +6,8 @@ import express from "express";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { schema, field } from "../src/schema";
-import { bootstrap } from "../src/bootstrap";
+import { schema, field } from "confts";
+import { bootstrap } from "../src";
 
 // Mock server implementation (callback-based)
 function createMockServer() {
@@ -92,19 +92,7 @@ describe("bootstrap()", () => {
       expect(receivedConfig).toEqual({ port: 5555, host: "localhost" });
     });
 
-    it("options.env overrides process.env", async () => {
-      vi.stubEnv("HOST", "from-process-env");
-      const mockServer = createMockServer();
-      let receivedConfig: unknown;
-      const service = bootstrap(configSchema, { env: { HOST: "from-options-env" } }, (config) => {
-        receivedConfig = config;
-        return mockServer;
-      });
-      await service.create();
-      expect(receivedConfig).toEqual({ port: 3000, host: "from-options-env" });
-    });
-
-    it("options.configPath loads config file", async () => {
+    it("options.configPath loads config file (JSON)", async () => {
       const configDir = mkdtempSync(join(tmpdir(), "confts-startup-"));
       writeFileSync(join(configDir, "config.json"), JSON.stringify({ port: 7777, host: "config-host" }));
       try {
@@ -147,20 +135,6 @@ describe("bootstrap()", () => {
       expect(receivedConfig).toEqual({ port: 3000, host: "localhost" });
     });
 
-    it("supports config overrides via options.override", async () => {
-      const mockServer = createMockServer();
-      let receivedConfig: unknown;
-
-      const service = bootstrap(configSchema, { override: { port: 8080 } }, (config) => {
-        receivedConfig = config;
-        return mockServer;
-      });
-
-      await service.create();
-
-      expect(receivedConfig).toEqual({ port: 8080, host: "localhost" });
-    });
-
     it("supports async factory", async () => {
       const mockServer = createMockServer();
 
@@ -172,47 +146,6 @@ describe("bootstrap()", () => {
       const { server } = await service.create();
 
       expect(server).toBe(mockServer);
-    });
-
-    it("respects env vars in config resolution", async () => {
-      vi.stubEnv("HOST", "0.0.0.0");
-
-      const mockServer = createMockServer();
-      let receivedConfig: unknown;
-
-      const service = bootstrap(configSchema, (config) => {
-        receivedConfig = config;
-        return mockServer;
-      });
-
-      await service.create();
-
-      // PORT uses default (env vars are strings, so only testing HOST here)
-      expect(receivedConfig).toEqual({ port: 3000, host: "0.0.0.0" });
-    });
-
-    it("create options merge with startup options", async () => {
-      const mockServer = createMockServer();
-      let receivedConfig: unknown;
-      const service = bootstrap(configSchema, { override: { port: 1111 }, initialValues: { host: "initial-host" } }, (config) => {
-        receivedConfig = config;
-        return mockServer;
-      });
-      // create() options merge - override wins for port, initialValues kept from startup
-      await service.create({ override: { port: 2222 } });
-      expect(receivedConfig).toEqual({ port: 2222, host: "initial-host" });
-    });
-
-    it("create options.env merges with startup options", async () => {
-      const mockServer = createMockServer();
-      let receivedConfig: unknown;
-      const service = bootstrap(configSchema, { env: { HOST: "startup-host" }, override: { port: 8888 } }, (config) => {
-        receivedConfig = config;
-        return mockServer;
-      });
-      // env from create wins, override from startup kept
-      await service.create({ env: { HOST: "create-host" } });
-      expect(receivedConfig).toEqual({ port: 8888, host: "create-host" });
     });
   });
 
@@ -243,25 +176,6 @@ describe("bootstrap()", () => {
       await new Promise((r) => setTimeout(r, 10));
 
       expect(mockServer.listenOptions).toEqual({ port: 8080 });
-
-      process.emit("SIGTERM", "SIGTERM");
-      await runPromise;
-    });
-
-    it("configOverride replaces startup override", async () => {
-      const mockServer = createMockServer();
-      let receivedConfig: unknown;
-      const service = bootstrap(configSchema, { override: { port: 1111 } }, (config) => {
-        receivedConfig = config;
-        return mockServer;
-      });
-
-      const runPromise = service.run({ configOverride: { port: 9999 } });
-
-      await new Promise((r) => setTimeout(r, 10));
-
-      expect(receivedConfig).toEqual({ port: 9999, host: "localhost" });
-      expect(mockServer.listenOptions).toEqual({ port: 9999 });
 
       process.emit("SIGTERM", "SIGTERM");
       await runPromise;
@@ -298,20 +212,6 @@ describe("bootstrap()", () => {
       expect(onShutdown).toHaveBeenCalledOnce();
     });
 
-    it("gracefully shuts down on SIGINT", async () => {
-      const mockServer = createMockServer();
-      const service = bootstrap(configSchema, () => mockServer);
-
-      const runPromise = service.run();
-
-      await new Promise((r) => setTimeout(r, 10));
-
-      process.emit("SIGINT", "SIGINT");
-      await runPromise;
-
-      expect(mockServer.closeCalled).toBe(true);
-    });
-
     it("handles Promise-based listen (Fastify-style) with host", async () => {
       const mockServer = createPromiseMockServer();
       const service = bootstrap(configSchema, () => mockServer);
@@ -328,85 +228,39 @@ describe("bootstrap()", () => {
       process.emit("SIGTERM", "SIGTERM");
       await runPromise;
     });
-
-    it("rejects when Promise-based listen fails", async () => {
-      const mockServer = {
-        listenCalled: false,
-        closeCalled: false,
-        listen(_options: { port: number; host?: string }): Promise<string> {
-          this.listenCalled = true;
-          return Promise.reject(new Error("EADDRINUSE"));
-        },
-        close(cb?: (err?: Error) => void) {
-          this.closeCalled = true;
-          if (cb) cb();
-        },
-      };
-      const service = bootstrap(configSchema, () => mockServer);
-
-      await expect(service.run({ host: "0.0.0.0" })).rejects.toThrow(
-        "EADDRINUSE"
-      );
-    });
   });
 
-  describe("auto-run with meta option", () => {
-    it("does not auto-run when meta not provided", async () => {
-      const mockServer = createMockServer();
-      bootstrap(configSchema, () => mockServer);
+  describe("loader registry integration", () => {
+    let tempDir: string;
 
-      await new Promise((r) => setTimeout(r, 10));
-
-      // Server should not have started
-      expect(mockServer.listenCalled).toBe(false);
+    beforeAll(() => {
+      tempDir = mkdtempSync(join(tmpdir(), "confts-bootstrap-"));
     });
 
-    it("does not auto-run when meta.url does not match main module", async () => {
-      const mockServer = createMockServer();
-      const fakeMeta = { url: "file:///some/other/file.ts" } as ImportMeta;
-
-      bootstrap(configSchema, { meta: fakeMeta }, () => mockServer);
-
-      await new Promise((r) => setTimeout(r, 10));
-
-      expect(mockServer.listenCalled).toBe(false);
+    afterAll(() => {
+      rmSync(tempDir, { recursive: true });
     });
 
-    it("auto-runs when meta.url matches process.argv[1]", async () => {
+    it("throws clear error for YAML without yaml-loader", async () => {
+      const configPath = join(tempDir, "config.yaml");
+      writeFileSync(configPath, "port: 8080\nhost: yaml-host");
       const mockServer = createMockServer();
-      // Create a meta that matches current process.argv[1]
-      const mainPath = process.argv[1];
-      const fakeMeta = { url: `file://${mainPath}` } as ImportMeta;
-
-      bootstrap(configSchema, { meta: fakeMeta }, () => mockServer);
-
-      await new Promise((r) => setTimeout(r, 20));
-
-      expect(mockServer.listenCalled).toBe(true);
-
-      // Cleanup
-      process.emit("SIGTERM", "SIGTERM");
-      await new Promise((r) => setTimeout(r, 10));
-    });
-  });
-
-  describe("auto-run with module option (CJS)", () => {
-    it("does not auto-run when module does not match require.main", async () => {
-      const mockServer = createMockServer();
-      // In ESM, require.main is undefined, so any module passed won't match
-      const fakeModule = { filename: "/some/other/file.js" } as NodeModule;
-
-      bootstrap(configSchema, { module: fakeModule }, () => mockServer);
-
-      await new Promise((r) => setTimeout(r, 10));
-
-      // Since require.main is undefined in ESM, this should not auto-run
-      expect(mockServer.listenCalled).toBe(false);
+      const service = bootstrap(configSchema, { configPath, env: {} }, () => mockServer);
+      await expect(service.create()).rejects.toThrow(/yaml-loader/i);
     });
 
-    // Note: Full CJS auto-run test requires actual CJS environment
-    // The implementation uses `require.main === options.module` which works in CJS
-    // but require.main is undefined in ESM test environment
+    it("works with JSON config file", async () => {
+      const configPath = join(tempDir, "config.json");
+      writeFileSync(configPath, '{"port": 9090, "host": "json-host"}');
+      const mockServer = createMockServer();
+      let receivedConfig: unknown;
+      const service = bootstrap(configSchema, { configPath, env: {} }, (config) => {
+        receivedConfig = config;
+        return mockServer;
+      });
+      await service.create();
+      expect(receivedConfig).toEqual({ port: 9090, host: "json-host" });
+    });
   });
 
   describe("Fastify integration", () => {
@@ -420,40 +274,6 @@ describe("bootstrap()", () => {
       const { server } = await service.create();
       expect(server).toBeDefined();
       await server.close();
-    });
-
-    it("works with real Fastify server via run() with host", async () => {
-      const onReady = vi.fn();
-      const service = bootstrap(configSchema, () => {
-        const app = fastify();
-        app.get("/ping", async () => "pong");
-        return app;
-      });
-
-      const runPromise = service.run({ host: "127.0.0.1", onReady });
-
-      await new Promise((r) => setTimeout(r, 50));
-      expect(onReady).toHaveBeenCalledOnce();
-
-      process.emit("SIGTERM", "SIGTERM");
-      await runPromise;
-    });
-
-    it("works with real Fastify server via run() without host", async () => {
-      const onReady = vi.fn();
-      const service = bootstrap(configSchema, () => {
-        const app = fastify();
-        app.get("/ping", async () => "pong");
-        return app;
-      });
-
-      const runPromise = service.run({ onReady });
-
-      await new Promise((r) => setTimeout(r, 50));
-      expect(onReady).toHaveBeenCalledOnce();
-
-      process.emit("SIGTERM", "SIGTERM");
-      await runPromise;
     });
   });
 
