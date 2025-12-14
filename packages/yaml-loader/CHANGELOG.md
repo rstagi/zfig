@@ -1,5 +1,13 @@
 # @confts/yaml-loader
 
+## 0.9.2
+
+### Patch Changes
+
+- 2242feb: Init changeset github actions
+- Updated dependencies [2242feb]
+  - confts@0.9.2
+
 ## 0.9.1
 
 ### Patch Changes
