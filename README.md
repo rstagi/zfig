@@ -13,28 +13,28 @@ npm install confts zod
 ## Quick Start
 
 ```typescript
-import { schema, key, parse } from "confts";
+import { schema, field, resolve } from "confts";
 import { z } from "zod";
 
 const configSchema = schema({
   appName: "my-app", // literal value
   someKey: {
-    publishableKey: key({
+    publishableKey: field({
       type: z.string().nonempty(),
       env: "MY_PUBLISHABLE_KEY",
     }),
-    secretKey: key({
+    secretKey: field({
       type: z.string().nonempty(),
       secretFile: "some-secret-file-name",
       sensitive: true,
     }),
     nested: {
-      someNestedKey: key({ type: z.number(), env: "MY_VAR", default: 3000 }),
+      someNestedKey: field({ type: z.number(), env: "MY_VAR", default: 3000 }),
     },
   },
 });
 
-const config = parse(configSchema, { configPath: "./config.yaml" });
+const config = resolve(configSchema, { configPath: "./config.yaml" });
 // config is fully typed
 ```
 
@@ -51,12 +51,12 @@ Values are resolved in priority order:
 
 ## API
 
-### `key(config)`
+### `field(config)`
 
 Define a config field with metadata:
 
 ```typescript
-key({
+field({
   type: z.string(),        // Zod type (required)
   env: "MY_VAR",           // env var name
   secretFile: "/path",     // path to secret file
@@ -72,17 +72,17 @@ Build a typed schema from a definition object:
 ```typescript
 const s = schema({
   literal: "value",           // becomes z.literal("value")
-  field: key({ type: z.string() }),
-  nested: { deep: key({ type: z.number() }) },
+  myField: field({ type: z.string() }),
+  nested: { deep: field({ type: z.number() }) },
 });
 ```
 
-### `parse(schema, options)`
+### `resolve(schema, options)`
 
 Load and validate config:
 
 ```typescript
-const config = parse(schema, {
+const config = resolve(schema, {
   configPath: "./config.yaml", // or set CONFIG_PATH env
   env: process.env,            // custom env (default: process.env)
   secretsPath: "/secrets",     // base path for secret files
@@ -96,16 +96,16 @@ Supports `.yaml`, `.yml`, and `.json` files.
 Mark fields as `sensitive: true` to redact values in error messages:
 
 ```typescript
-key({
+field({
   type: z.string(),
   env: "API_SECRET",
   sensitive: true, // shows [REDACTED] in errors
 });
 ```
 
-## Server Startup
+## Server Bootstrap
 
-The `startup()` helper provides a consistent pattern for server lifecycle management with graceful shutdown.
+The `bootstrap()` helper provides a consistent pattern for server lifecycle management with graceful shutdown.
 
 ### Auto-run (ESM)
 
@@ -113,15 +113,15 @@ Pass `import.meta` to auto-run when file is executed directly:
 
 ```typescript
 // app.ts (ESM)
-import { startup, schema, key } from "confts";
+import { bootstrap, schema, field } from "confts";
 import { z } from "zod";
 
 const configSchema = schema({
-  port: key({ type: z.number(), env: "PORT", default: 3000 }),
-  dbUrl: key({ type: z.string(), env: "DATABASE_URL" }),
+  port: field({ type: z.number(), env: "PORT", default: 3000 }),
+  dbUrl: field({ type: z.string(), env: "DATABASE_URL" }),
 });
 
-export default startup(configSchema, { meta: import.meta }, async (config) => {
+export default bootstrap(configSchema, { meta: import.meta }, async (config) => {
   await db.connect(config.dbUrl);
   const app = express();
   app.get("/health", (req, res) => res.send("ok"));
@@ -138,14 +138,14 @@ Pass `module` for CJS projects:
 
 ```javascript
 // app.cjs (CommonJS)
-const { startup, schema, key } = require("confts");
+const { bootstrap, schema, field } = require("confts");
 const { z } = require("zod");
 
 const configSchema = schema({
-  port: key({ type: z.number(), env: "PORT", default: 3000 }),
+  port: field({ type: z.number(), env: "PORT", default: 3000 }),
 });
 
-module.exports = startup(configSchema, { module }, (config) => {
+module.exports = bootstrap(configSchema, { module }, (config) => {
   const app = require("express")();
   return app;
 });
@@ -158,12 +158,12 @@ module.exports = startup(configSchema, { module }, (config) => {
 
 ```typescript
 // ESM
-const service = startup(configSchema, factory);
+const service = bootstrap(configSchema, factory);
 if (import.meta.url === `file://${process.argv[1]}`) service.run();
 export default service;
 
 // CJS
-const service = startup(configSchema, factory);
+const service = bootstrap(configSchema, factory);
 if (require.main === module) service.run();
 module.exports = service;
 ```
@@ -181,14 +181,14 @@ const app = await service.create({ override: { dbUrl: "test://..." } });
 ### API
 
 Signatures:
-- `startup(schema, factory)` - basic, no auto-run
-- `startup(schema, options, factory)` - with options
+- `bootstrap(schema, factory)` - basic, no auto-run
+- `bootstrap(schema, options, factory)` - with options
 
 Returns:
 - `create(options?)` - builds server without listening (for tests)
 - `run(options?)` - builds server, listens, handles graceful shutdown
 
-`StartupOptions`:
+`BootstrapOptions`:
 - `meta` - pass `import.meta` for ESM auto-run
 - `module` - pass `module` for CJS auto-run
 - `initialValues` - base config values (lowest priority)
@@ -197,7 +197,7 @@ Returns:
 - `secretsPath` - base path for secret files
 - `override` - override values (highest priority)
 
-`create(options?)` accepts same resolution options as `StartupOptions`.
+`create(options?)` accepts same resolution options as `BootstrapOptions`.
 
 `run(options?)`:
 - `port` - override config port

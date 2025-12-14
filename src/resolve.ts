@@ -1,19 +1,19 @@
 import { extname } from "node:path";
 import { loadYaml } from "./loaders/yaml";
 import { loadJson } from "./loaders/json";
-import { resolve } from "./resolver";
+import { resolveValues } from "./values";
 import { ConfigError } from "./errors";
 import type { ConftsSchema, InferSchema } from "./types";
 
-export interface ParseOptions {
+export interface ResolveOptions {
   configPath?: string;
   env?: Record<string, string | undefined>;
   secretsPath?: string;
 }
 
-export function parse<S extends ConftsSchema<Record<string, unknown>>>(
+export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
   schema: S,
-  options: ParseOptions = {}
+  options: ResolveOptions = {}
 ): InferSchema<S> {
   const { env = process.env, secretsPath = "/secrets" } = options;
   const configPath = options.configPath ?? env.CONFIG_PATH;
@@ -49,5 +49,5 @@ export function parse<S extends ConftsSchema<Record<string, unknown>>>(
     );
   }
 
-  return resolve(schema, { fileValues, env, secretsPath }) as InferSchema<S>;
+  return resolveValues(schema, { fileValues, env, secretsPath }) as InferSchema<S>;
 }

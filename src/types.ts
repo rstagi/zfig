@@ -1,6 +1,6 @@
 import type { ZodTypeAny, ZodObject, z } from "zod";
 
-export interface KeyConfig<T extends ZodTypeAny = ZodTypeAny> {
+export interface FieldConfig<T extends ZodTypeAny = ZodTypeAny> {
   type: T;
   env?: string;
   secretFile?: string;
@@ -9,18 +9,18 @@ export interface KeyConfig<T extends ZodTypeAny = ZodTypeAny> {
 }
 
 export type SchemaDefinition = {
-  [key: string]: KeyConfig | SchemaDefinition | string | number | boolean;
+  [key: string]: FieldConfig | SchemaDefinition | string | number | boolean;
 };
 
-export const KEY_MARKER = Symbol("confts.key");
+export const FIELD_MARKER = Symbol("confts.field");
 
-export interface MarkedKeyConfig<T extends ZodTypeAny = ZodTypeAny>
-  extends KeyConfig<T> {
-  [KEY_MARKER]: true;
+export interface MarkedFieldConfig<T extends ZodTypeAny = ZodTypeAny>
+  extends FieldConfig<T> {
+  [FIELD_MARKER]: true;
 }
 
 /** Infer type from single field */
-export type InferField<F> = F extends MarkedKeyConfig<infer Z>
+export type InferField<F> = F extends MarkedFieldConfig<infer Z>
   ? z.infer<Z>
   : F extends string
     ? F

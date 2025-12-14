@@ -6,8 +6,8 @@ import express from "express";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { schema, key } from "../src/schema";
-import { startup } from "../src/startup";
+import { schema, field } from "../src/schema";
+import { bootstrap } from "../src/bootstrap";
 
 // Mock server implementation (callback-based)
 function createMockServer() {
@@ -48,10 +48,10 @@ function createPromiseMockServer() {
   };
 }
 
-describe("startup()", () => {
+describe("bootstrap()", () => {
   const configSchema = schema({
-    port: key({ type: z.number(), env: "PORT", default: 3000 }),
-    host: key({ type: z.string(), env: "HOST", default: "localhost" }),
+    port: field({ type: z.number(), env: "PORT", default: 3000 }),
+    host: field({ type: z.string(), env: "HOST", default: "localhost" }),
   });
 
   beforeEach(() => {
@@ -65,7 +65,7 @@ describe("startup()", () => {
   describe("function overloads", () => {
     it("works with (schema, factory) signature", async () => {
       const mockServer = createMockServer();
-      const service = startup(configSchema, () => mockServer);
+      const service = bootstrap(configSchema, () => mockServer);
       const { server } = await service.create();
       expect(server).toBe(mockServer);
     });
@@ -73,7 +73,7 @@ describe("startup()", () => {
     it("works with (schema, options, factory) signature", async () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
-      const service = startup(configSchema, { initialValues: { port: 9999 } }, (config) => {
+      const service = bootstrap(configSchema, { initialValues: { port: 9999 } }, (config) => {
         receivedConfig = config;
         return mockServer;
       });
@@ -84,7 +84,7 @@ describe("startup()", () => {
     it("options.override has highest priority", async () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
-      const service = startup(configSchema, { initialValues: { port: 8080 }, override: { port: 5555 } }, (config) => {
+      const service = bootstrap(configSchema, { initialValues: { port: 8080 }, override: { port: 5555 } }, (config) => {
         receivedConfig = config;
         return mockServer;
       });
@@ -96,7 +96,7 @@ describe("startup()", () => {
       vi.stubEnv("HOST", "from-process-env");
       const mockServer = createMockServer();
       let receivedConfig: unknown;
-      const service = startup(configSchema, { env: { HOST: "from-options-env" } }, (config) => {
+      const service = bootstrap(configSchema, { env: { HOST: "from-options-env" } }, (config) => {
         receivedConfig = config;
         return mockServer;
       });
@@ -110,7 +110,7 @@ describe("startup()", () => {
       try {
         const mockServer = createMockServer();
         let receivedConfig: unknown;
-        const service = startup(configSchema, { configPath: join(configDir, "config.json"), env: {} }, (config) => {
+        const service = bootstrap(configSchema, { configPath: join(configDir, "config.json"), env: {} }, (config) => {
           receivedConfig = config;
           return mockServer;
         });
@@ -125,7 +125,7 @@ describe("startup()", () => {
   describe("create()", () => {
     it("returns server without calling listen", async () => {
       const mockServer = createMockServer();
-      const service = startup(configSchema, () => mockServer);
+      const service = bootstrap(configSchema, () => mockServer);
 
       const { server } = await service.create();
 
@@ -137,7 +137,7 @@ describe("startup()", () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
 
-      const service = startup(configSchema, (config) => {
+      const service = bootstrap(configSchema, (config) => {
         receivedConfig = config;
         return mockServer;
       });
@@ -151,7 +151,7 @@ describe("startup()", () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
 
-      const service = startup(configSchema, { override: { port: 8080 } }, (config) => {
+      const service = bootstrap(configSchema, { override: { port: 8080 } }, (config) => {
         receivedConfig = config;
         return mockServer;
       });
@@ -164,7 +164,7 @@ describe("startup()", () => {
     it("supports async factory", async () => {
       const mockServer = createMockServer();
 
-      const service = startup(configSchema, async () => {
+      const service = bootstrap(configSchema, async () => {
         await new Promise((r) => setTimeout(r, 10));
         return mockServer;
       });
@@ -180,7 +180,7 @@ describe("startup()", () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
 
-      const service = startup(configSchema, (config) => {
+      const service = bootstrap(configSchema, (config) => {
         receivedConfig = config;
         return mockServer;
       });
@@ -194,7 +194,7 @@ describe("startup()", () => {
     it("create options merge with startup options", async () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
-      const service = startup(configSchema, { override: { port: 1111 }, initialValues: { host: "initial-host" } }, (config) => {
+      const service = bootstrap(configSchema, { override: { port: 1111 }, initialValues: { host: "initial-host" } }, (config) => {
         receivedConfig = config;
         return mockServer;
       });
@@ -206,7 +206,7 @@ describe("startup()", () => {
     it("create options.env merges with startup options", async () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
-      const service = startup(configSchema, { env: { HOST: "startup-host" }, override: { port: 8888 } }, (config) => {
+      const service = bootstrap(configSchema, { env: { HOST: "startup-host" }, override: { port: 8888 } }, (config) => {
         receivedConfig = config;
         return mockServer;
       });
@@ -219,7 +219,7 @@ describe("startup()", () => {
   describe("run()", () => {
     it("calls listen with port from config", async () => {
       const mockServer = createMockServer();
-      const service = startup(configSchema, () => mockServer);
+      const service = bootstrap(configSchema, () => mockServer);
 
       const runPromise = service.run();
 
@@ -236,7 +236,7 @@ describe("startup()", () => {
 
     it("uses port override from options", async () => {
       const mockServer = createMockServer();
-      const service = startup(configSchema, () => mockServer);
+      const service = bootstrap(configSchema, () => mockServer);
 
       const runPromise = service.run({ port: 8080 });
 
@@ -251,7 +251,7 @@ describe("startup()", () => {
     it("configOverride replaces startup override", async () => {
       const mockServer = createMockServer();
       let receivedConfig: unknown;
-      const service = startup(configSchema, { override: { port: 1111 } }, (config) => {
+      const service = bootstrap(configSchema, { override: { port: 1111 } }, (config) => {
         receivedConfig = config;
         return mockServer;
       });
@@ -269,7 +269,7 @@ describe("startup()", () => {
 
     it("calls onReady callback after listen", async () => {
       const mockServer = createMockServer();
-      const service = startup(configSchema, () => mockServer);
+      const service = bootstrap(configSchema, () => mockServer);
       const onReady = vi.fn();
 
       const runPromise = service.run({ onReady });
@@ -284,7 +284,7 @@ describe("startup()", () => {
 
     it("gracefully shuts down on SIGTERM", async () => {
       const mockServer = createMockServer();
-      const service = startup(configSchema, () => mockServer);
+      const service = bootstrap(configSchema, () => mockServer);
       const onShutdown = vi.fn();
 
       const runPromise = service.run({ onShutdown });
@@ -300,7 +300,7 @@ describe("startup()", () => {
 
     it("gracefully shuts down on SIGINT", async () => {
       const mockServer = createMockServer();
-      const service = startup(configSchema, () => mockServer);
+      const service = bootstrap(configSchema, () => mockServer);
 
       const runPromise = service.run();
 
@@ -314,7 +314,7 @@ describe("startup()", () => {
 
     it("handles Promise-based listen (Fastify-style) with host", async () => {
       const mockServer = createPromiseMockServer();
-      const service = startup(configSchema, () => mockServer);
+      const service = bootstrap(configSchema, () => mockServer);
       const onReady = vi.fn();
 
       const runPromise = service.run({ host: "0.0.0.0", onReady });
@@ -342,7 +342,7 @@ describe("startup()", () => {
           if (cb) cb();
         },
       };
-      const service = startup(configSchema, () => mockServer);
+      const service = bootstrap(configSchema, () => mockServer);
 
       await expect(service.run({ host: "0.0.0.0" })).rejects.toThrow(
         "EADDRINUSE"
@@ -353,7 +353,7 @@ describe("startup()", () => {
   describe("auto-run with meta option", () => {
     it("does not auto-run when meta not provided", async () => {
       const mockServer = createMockServer();
-      startup(configSchema, () => mockServer);
+      bootstrap(configSchema, () => mockServer);
 
       await new Promise((r) => setTimeout(r, 10));
 
@@ -365,7 +365,7 @@ describe("startup()", () => {
       const mockServer = createMockServer();
       const fakeMeta = { url: "file:///some/other/file.ts" } as ImportMeta;
 
-      startup(configSchema, { meta: fakeMeta }, () => mockServer);
+      bootstrap(configSchema, { meta: fakeMeta }, () => mockServer);
 
       await new Promise((r) => setTimeout(r, 10));
 
@@ -378,7 +378,7 @@ describe("startup()", () => {
       const mainPath = process.argv[1];
       const fakeMeta = { url: `file://${mainPath}` } as ImportMeta;
 
-      startup(configSchema, { meta: fakeMeta }, () => mockServer);
+      bootstrap(configSchema, { meta: fakeMeta }, () => mockServer);
 
       await new Promise((r) => setTimeout(r, 20));
 
@@ -396,7 +396,7 @@ describe("startup()", () => {
       // In ESM, require.main is undefined, so any module passed won't match
       const fakeModule = { filename: "/some/other/file.js" } as NodeModule;
 
-      startup(configSchema, { module: fakeModule }, () => mockServer);
+      bootstrap(configSchema, { module: fakeModule }, () => mockServer);
 
       await new Promise((r) => setTimeout(r, 10));
 
@@ -411,7 +411,7 @@ describe("startup()", () => {
 
   describe("Fastify integration", () => {
     it("works with real Fastify server via create()", async () => {
-      const service = startup(configSchema, () => {
+      const service = bootstrap(configSchema, () => {
         const app = fastify();
         app.get("/ping", async () => "pong");
         return app;
@@ -424,7 +424,7 @@ describe("startup()", () => {
 
     it("works with real Fastify server via run() with host", async () => {
       const onReady = vi.fn();
-      const service = startup(configSchema, () => {
+      const service = bootstrap(configSchema, () => {
         const app = fastify();
         app.get("/ping", async () => "pong");
         return app;
@@ -441,7 +441,7 @@ describe("startup()", () => {
 
     it("works with real Fastify server via run() without host", async () => {
       const onReady = vi.fn();
-      const service = startup(configSchema, () => {
+      const service = bootstrap(configSchema, () => {
         const app = fastify();
         app.get("/ping", async () => "pong");
         return app;
@@ -460,7 +460,7 @@ describe("startup()", () => {
   describe("Express integration", () => {
     it("works with Express via http.createServer", async () => {
       const onReady = vi.fn();
-      const service = startup(configSchema, () => {
+      const service = bootstrap(configSchema, () => {
         const app = express();
         app.get("/ping", (_req, res) => res.send("pong"));
         return createServer(app);

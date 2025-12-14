@@ -1,14 +1,13 @@
-export { schema, key } from "./schema";
-export { parse } from "./parser";
-export { resolve } from "./resolver";
-export { startup } from "./startup";
+export { schema, field } from "./schema";
+export { resolve } from "./resolve";
+export { resolveValues } from "./values";
+export { bootstrap } from "./bootstrap";
 export { ConfigError } from "./errors";
 export type {
-  KeyConfig,
+  FieldConfig,
   SchemaDefinition,
   ConftsSchema,
   InferSchema,
 } from "./types";
-export type { ResolveOptions } from "./resolver";
-export type { ParseOptions } from "./parser";
-export type { ServerLike, Service, RunOptions, StartupOptions, ListenOptions } from "./startup";
+export type { ResolveOptions } from "./resolve";
+export type { ServerLike, Service, RunOptions, StartupOptions, ListenOptions } from "./bootstrap";

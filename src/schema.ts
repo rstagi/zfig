@@ -1,8 +1,8 @@
 import { z, type ZodTypeAny } from "zod";
 import {
-  KEY_MARKER,
-  type KeyConfig,
-  type MarkedKeyConfig,
+  FIELD_MARKER,
+  type FieldConfig,
+  type MarkedFieldConfig,
   type ConftsSchema,
 } from "./types";
 
@@ -12,10 +12,10 @@ export function schema<const D extends Record<string, unknown>>(
   return z.object(buildZodShape(definition)) as ConftsSchema<D>;
 }
 
-export function key<T extends ZodTypeAny>(config: KeyConfig<T>): MarkedKeyConfig<T> {
+export function field<T extends ZodTypeAny>(config: FieldConfig<T>): MarkedFieldConfig<T> {
   return {
     ...config,
-    [KEY_MARKER]: true,
+    [FIELD_MARKER]: true,
   };
 }
 
@@ -23,7 +23,7 @@ function buildZodShape(definition: Record<string, unknown>): Record<string, ZodT
   const shape: Record<string, ZodTypeAny> = {};
 
   for (const [k, v] of Object.entries(definition)) {
-    if (isMarkedKey(v)) {
+    if (isMarkedField(v)) {
       const { type, env, secretFile, sensitive, default: defaultValue } = v;
       const meta: Record<string, unknown> = {};
       if (env !== undefined) meta.env = env;
@@ -41,8 +41,8 @@ function buildZodShape(definition: Record<string, unknown>): Record<string, ZodT
   return shape;
 }
 
-function isMarkedKey(value: unknown): value is MarkedKeyConfig {
-  return typeof value === "object" && value !== null && KEY_MARKER in value;
+function isMarkedField(value: unknown): value is MarkedFieldConfig {
+  return typeof value === "object" && value !== null && FIELD_MARKER in value;
 }
 
 function isPrimitive(value: unknown): value is string | number | boolean {

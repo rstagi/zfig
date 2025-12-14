@@ -1,7 +1,7 @@
 import { describe, it, expectTypeOf } from "vitest";
 import { z } from "zod";
-import { schema, key } from "../src/schema";
-import { parse } from "../src/parser";
+import { schema, field } from "../src/schema";
+import { resolve } from "../src/resolve";
 import type { InferSchema } from "../src/types";
 
 describe("type inference", () => {
@@ -22,31 +22,31 @@ describe("type inference", () => {
     });
   });
 
-  describe("key() types", () => {
+  describe("field() types", () => {
     it("infers string from z.string()", () => {
-      const s = schema({ host: key({ type: z.string() }) });
+      const s = schema({ host: field({ type: z.string() }) });
       expectTypeOf<InferSchema<typeof s>>().toMatchTypeOf<{ host: string }>();
     });
 
     it("infers number from z.number()", () => {
-      const s = schema({ port: key({ type: z.number() }) });
+      const s = schema({ port: field({ type: z.number() }) });
       expectTypeOf<InferSchema<typeof s>>().toMatchTypeOf<{ port: number }>();
     });
 
     it("infers boolean from z.boolean()", () => {
-      const s = schema({ enabled: key({ type: z.boolean() }) });
+      const s = schema({ enabled: field({ type: z.boolean() }) });
       expectTypeOf<InferSchema<typeof s>>().toMatchTypeOf<{ enabled: boolean }>();
     });
 
     it("infers optional from z.string().optional()", () => {
-      const s = schema({ name: key({ type: z.string().optional() }) });
+      const s = schema({ name: field({ type: z.string().optional() }) });
       expectTypeOf<InferSchema<typeof s>>().toMatchTypeOf<{
         name: string | undefined;
       }>();
     });
 
     it("infers array from z.array()", () => {
-      const s = schema({ tags: key({ type: z.array(z.string()) }) });
+      const s = schema({ tags: field({ type: z.array(z.string()) }) });
       expectTypeOf<InferSchema<typeof s>>().toMatchTypeOf<{ tags: string[] }>();
     });
   });
@@ -55,8 +55,8 @@ describe("type inference", () => {
     it("infers nested object types", () => {
       const s = schema({
         db: {
-          host: key({ type: z.string() }),
-          port: key({ type: z.number() }),
+          host: field({ type: z.string() }),
+          port: field({ type: z.number() }),
         },
       });
       expectTypeOf<InferSchema<typeof s>>().toMatchTypeOf<{
@@ -69,7 +69,7 @@ describe("type inference", () => {
         app: {
           db: {
             connection: {
-              host: key({ type: z.string() }),
+              host: field({ type: z.string() }),
             },
           },
         },
@@ -82,7 +82,7 @@ describe("type inference", () => {
     it("infers mixed literals and keys in nested objects", () => {
       const s = schema({
         api: {
-          url: key({ type: z.string() }),
+          url: field({ type: z.string() }),
           timeout: 5000,
         },
       });
@@ -92,14 +92,14 @@ describe("type inference", () => {
     });
   });
 
-  describe("parse() return type", () => {
+  describe("resolve() return type", () => {
     it("returns correctly typed config", () => {
       const s = schema({
-        host: key({ type: z.string() }),
-        port: key({ type: z.number() }),
+        host: field({ type: z.string() }),
+        port: field({ type: z.number() }),
       });
-      type ParseResult = ReturnType<typeof parse<typeof s>>;
-      expectTypeOf<ParseResult>().toMatchTypeOf<{ host: string; port: number }>();
+      type ResolveResult = ReturnType<typeof resolve<typeof s>>;
+      expectTypeOf<ResolveResult>().toMatchTypeOf<{ host: string; port: number }>();
     });
   });
 });

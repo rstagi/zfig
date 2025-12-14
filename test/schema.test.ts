@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
-import { schema, key } from "../src/schema";
+import { schema, field } from "../src/schema";
 
 describe("schema()", () => {
-  it("returns Zod object for nested definition with key()", () => {
+  it("returns Zod object for nested definition with field()", () => {
     const s = schema({
       db: {
-        host: key({ type: z.string() }),
+        host: field({ type: z.string() }),
       },
     });
 
@@ -40,7 +40,7 @@ describe("schema()", () => {
   it("handles mixed nested objects with keys and literals", () => {
     const s = schema({
       api: {
-        url: key({ type: z.string() }),
+        url: field({ type: z.string() }),
         timeout: 5000,
       },
     });
@@ -57,14 +57,14 @@ describe("schema()", () => {
     expect(() => s.parse({ api: { url: 123, timeout: 5000 } })).toThrow();
   });
 
-  it("stores KeyConfig metadata via .meta()", () => {
+  it("stores FieldConfig metadata via .meta()", () => {
     const s = schema({
-      host: key({
+      host: field({
         type: z.string(),
         env: "DB_HOST",
         sensitive: false,
       }),
-      password: key({
+      password: field({
         type: z.string(),
         env: "DB_PASSWORD",
         secretFile: "/run/secrets/db_password",

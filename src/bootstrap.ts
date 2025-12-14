@@ -1,6 +1,6 @@
 import { resolve as resolvePath, extname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolve } from "./resolver";
+import { resolveValues } from "./values";
 import { loadYaml } from "./loaders/yaml";
 import { loadJson } from "./loaders/json";
 import type { ConftsSchema, InferSchema } from "./types";
@@ -46,8 +46,8 @@ export interface StartupOptions extends ResolveParams {
   module?: NodeModule;
 }
 
-// Overload: startup(schema, factory)
-export function startup<
+// Overload: bootstrap(schema, factory)
+export function bootstrap<
   S extends ConftsSchema<Record<string, unknown>>,
   T extends ServerLike,
 >(
@@ -55,8 +55,8 @@ export function startup<
   factory: (config: InferSchema<S>) => T | Promise<T>
 ): Service<S, T>;
 
-// Overload: startup(schema, options, factory)
-export function startup<
+// Overload: bootstrap(schema, options, factory)
+export function bootstrap<
   S extends ConftsSchema<Record<string, unknown>>,
   T extends ServerLike,
 >(
@@ -66,7 +66,7 @@ export function startup<
 ): Service<S, T>;
 
 // Implementation
-export function startup<
+export function bootstrap<
   S extends ConftsSchema<Record<string, unknown>>,
   T extends ServerLike,
 >(
@@ -81,7 +81,7 @@ export function startup<
   const resolveConfig = (overrides?: ResolveParams) => {
     const params = { ...options, ...overrides };
     const fileValues = params.configPath ? loadConfigFile(params.configPath) : undefined;
-    return resolve(configSchema, {
+    return resolveValues(configSchema, {
       initialValues: params.initialValues,
       fileValues,
       env: params.env ?? process.env,

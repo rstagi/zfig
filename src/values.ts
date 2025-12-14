@@ -20,7 +20,7 @@ interface KeyMeta {
   default?: unknown;
 }
 
-export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
+export function resolveValues<S extends ConftsSchema<Record<string, unknown>>>(
   schema: S,
   options: ResolveOptions = {}
 ): InferSchema<S> {
