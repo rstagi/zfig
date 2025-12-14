@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.8.1] - 2025-12-14
+- doc: add getSources to README
+
 ## [0.8.0] - 2025-12-14
 - feat: expose source context for debugging
 
