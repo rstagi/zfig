@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0] - 2025-12-14
+- doc: update README
+- refactor: naming
+- doc: update README
+- refactor: move functions to match top-down reading
+- chore: fix changelog script
+
 ## [0.5.3] - 2025-12-14
 - chore: fix changelog script
 - 0.5.2
