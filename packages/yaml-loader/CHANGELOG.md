@@ -1,5 +1,13 @@
 # @confts/yaml-loader
 
+## 0.9.9
+
+### Patch Changes
+
+- f15aee4: Lintfix
+- Updated dependencies [f15aee4]
+  - confts@0.9.9
+
 ## 0.9.8
 
 ### Patch Changes

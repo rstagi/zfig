@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.9
+
+### Patch Changes
+
+- f15aee4: Lintfix
+
 ## 0.9.8
 
 ### Patch Changes
