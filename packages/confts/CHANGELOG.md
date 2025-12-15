@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.3
+
+### Patch Changes
+
+- d71591b: Support composable schemas
+
 ## 0.9.2
 
 ### Patch Changes
