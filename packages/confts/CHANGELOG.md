@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.8
+
+### Patch Changes
+
+- dc428a2: Better typing of result config object
+
 ## 0.9.7
 
 ### Patch Changes
