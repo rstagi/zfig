@@ -156,6 +156,33 @@ console.log(config.toDebugObject());
 
 Sensitive values are automatically redacted.
 
+## Composable Configs
+
+Schemas can be nested inside other schemas for modular config structures:
+
+```typescript
+const dbSchema = schema({
+  host: field({ type: z.string(), env: "DB_HOST" }),
+  port: field({ type: z.number(), default: 5432 }),
+});
+
+const cacheSchema = schema({
+  host: field({ type: z.string(), env: "CACHE_HOST" }),
+  ttl: field({ type: z.number(), default: 3600 }),
+});
+
+const appSchema = schema({
+  db: dbSchema,
+  cache: cacheSchema,
+  name: field({ type: z.string() }),
+});
+
+const config = resolve(appSchema, { configPath: "./config.yaml" });
+// config.db.host, config.cache.ttl, etc. - fully typed
+```
+
+Useful for complex systems with components/sub-components each owning their config.
+
 ## Sensitive Values
 
 Mark fields as `sensitive: true` to redact values in error messages:

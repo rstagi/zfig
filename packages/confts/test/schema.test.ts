@@ -107,4 +107,68 @@ describe("schema()", () => {
     expect(s.shape.host.description).toBe("Database host");
     expect(s.shape.host.meta()).toMatchObject({ env: "DB_HOST" });
   });
+
+  describe("composable schemas", () => {
+    it("allows nesting a schema inside another schema", () => {
+      const dbSchema = schema({
+        host: field({ type: z.string(), env: "DB_HOST" }),
+        port: field({ type: z.number(), default: 5432 }),
+      });
+
+      const appSchema = schema({
+        db: dbSchema,
+        name: field({ type: z.string() }),
+      });
+
+      // Should parse valid nested config
+      expect(appSchema.parse({ db: { host: "localhost", port: 5432 }, name: "app" })).toEqual({
+        db: { host: "localhost", port: 5432 },
+        name: "app",
+      });
+
+      // Should reject invalid nested config
+      expect(() => appSchema.parse({ db: { host: 123, port: 5432 }, name: "app" })).toThrow();
+    });
+
+    it("preserves metadata from nested schema fields", () => {
+      const dbSchema = schema({
+        host: field({ type: z.string(), env: "DB_HOST", doc: "Database host" }),
+      });
+
+      const appSchema = schema({
+        db: dbSchema,
+      });
+
+      // Metadata should be accessible in nested schema
+      expect(appSchema.shape.db.shape.host.meta()).toMatchObject({ env: "DB_HOST" });
+      expect(appSchema.shape.db.shape.host.description).toBe("Database host");
+    });
+
+    it("supports deeply nested composable schemas", () => {
+      const connectionSchema = schema({
+        host: field({ type: z.string() }),
+        port: field({ type: z.number() }),
+      });
+
+      const dbSchema = schema({
+        connection: connectionSchema,
+        name: field({ type: z.string() }),
+      });
+
+      const appSchema = schema({
+        database: dbSchema,
+        version: "1.0",
+      });
+
+      expect(
+        appSchema.parse({
+          database: { connection: { host: "localhost", port: 5432 }, name: "mydb" },
+          version: "1.0",
+        })
+      ).toEqual({
+        database: { connection: { host: "localhost", port: 5432 }, name: "mydb" },
+        version: "1.0",
+      });
+    });
+  });
 });

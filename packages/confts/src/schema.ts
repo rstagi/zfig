@@ -34,12 +34,23 @@ function buildZodShape(definition: Record<string, unknown>): Record<string, ZodT
       shape[k] = Object.keys(meta).length > 0 ? described.meta(meta) : described;
     } else if (isPrimitive(v)) {
       shape[k] = z.literal(v);
+    } else if (isZodType(v)) {
+      shape[k] = v;
     } else if (typeof v === "object" && v !== null) {
       shape[k] = z.object(buildZodShape(v as Record<string, unknown>));
     }
   }
 
   return shape;
+}
+
+function isZodType(value: unknown): value is ZodTypeAny {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "_def" in value &&
+    typeof (value as Record<string, unknown>)._def === "object"
+  );
 }
 
 function isMarkedField(value: unknown): value is MarkedFieldConfig {
