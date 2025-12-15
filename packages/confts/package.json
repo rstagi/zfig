@@ -1,6 +1,6 @@
 {
   "name": "confts",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "description": "Dev-friendly TypeScript configuration library with Zod",
   "type": "module",
   "main": "./dist/index.cjs",

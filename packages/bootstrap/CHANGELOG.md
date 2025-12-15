@@ -1,5 +1,13 @@
 # @confts/bootstrap
 
+## 0.9.10
+
+### Patch Changes
+
+- 1e8bc3b: Fix typing (InferSchema -> ResolvedConfig)
+  - confts@0.9.10
+  - @confts/yaml-loader@0.9.10
+
 ## 0.9.9
 
 ### Patch Changes
