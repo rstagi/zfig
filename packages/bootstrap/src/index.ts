@@ -38,10 +38,15 @@ export interface RunOptions {
   configOverride?: Record<string, unknown>;
 }
 
-export interface StartupOptions extends ResolveParams {
-  // Auto-run detection
-  meta?: ImportMeta;
-  module?: NodeModule;
+export type AutorunOptions<T> =
+  | { enabled: false }
+  | ({
+      enabled: true;
+      runOptions?: Partial<RunOptions> | ((config: T) => Partial<RunOptions>);
+    } & ({ meta: ImportMeta } | { module: NodeModule }));
+
+export interface StartupOptions<T = unknown> extends ResolveParams {
+  autorun?: AutorunOptions<T>;
 }
 
 // Overload: bootstrap(schema, factory)
@@ -59,7 +64,7 @@ export function bootstrap<
   T extends ServerLike,
 >(
   configSchema: S,
-  options: StartupOptions,
+  options: StartupOptions<InferSchema<S>>,
   factory: (config: InferSchema<S>) => T | Promise<T>
 ): Service<S, T>;
 
@@ -69,11 +74,11 @@ export function bootstrap<
   T extends ServerLike,
 >(
   configSchema: S,
-  factoryOrOptions: ((config: InferSchema<S>) => T | Promise<T>) | StartupOptions,
+  factoryOrOptions: ((config: InferSchema<S>) => T | Promise<T>) | StartupOptions<InferSchema<S>>,
   maybeFactory?: (config: InferSchema<S>) => T | Promise<T>
 ): Service<S, T> {
   const isOptionsSignature = typeof factoryOrOptions !== "function";
-  const options: StartupOptions = isOptionsSignature ? factoryOrOptions : {};
+  const options: StartupOptions<InferSchema<S>> = isOptionsSignature ? factoryOrOptions : {};
   const factory = isOptionsSignature ? maybeFactory! : factoryOrOptions;
 
   const resolveConfig = (overrides?: ResolveParams) => {
@@ -134,24 +139,36 @@ export function bootstrap<
     },
   };
 
-  // Auto-run if meta or module provided and this is the main module
-  if (options && (options.meta || options.module) && isMainModule(options)) {
-    service.run();
+  // Auto-run if enabled and this is the main module
+  if (options.autorun?.enabled && isMainModule(options.autorun)) {
+    const config = resolveConfig();
+    const runOpts = resolveAutorunOptions(options.autorun, config);
+    service.run(runOpts);
   }
 
   return service;
 }
 
-function isMainModule(options: StartupOptions): boolean {
-  if (options.meta) {
-    const callerPath = fileURLToPath(options.meta.url);
+function isMainModule(autorun: { enabled: true; meta?: ImportMeta; module?: NodeModule }): boolean {
+  if ("meta" in autorun && autorun.meta) {
+    const callerPath = fileURLToPath(autorun.meta.url);
     const mainPath = resolvePath(process.argv[1]);
     return callerPath === mainPath;
   }
-  if (options.module) {
-    return require.main === options.module;
+  if ("module" in autorun && autorun.module) {
+    return require.main === autorun.module;
   }
   return false;
+}
+
+function resolveAutorunOptions<T>(
+  autorun: AutorunOptions<T>,
+  config: T
+): Partial<RunOptions> | undefined {
+  if (!autorun.enabled || !autorun.runOptions) return undefined;
+  return typeof autorun.runOptions === "function"
+    ? autorun.runOptions(config)
+    : autorun.runOptions;
 }
 
 function loadConfigFile(configPath: string): Record<string, unknown> | undefined {

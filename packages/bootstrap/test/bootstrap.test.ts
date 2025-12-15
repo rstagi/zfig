@@ -295,4 +295,58 @@ describe("bootstrap()", () => {
       await runPromise;
     });
   });
+
+  describe("autorun", () => {
+    it("does not auto-run when enabled: false", () => {
+      const mockServer = createMockServer();
+      bootstrap(configSchema, { autorun: { enabled: false } }, () => mockServer);
+
+      expect(mockServer.listenCalled).toBe(false);
+    });
+
+    it("does not auto-run when autorun not provided", () => {
+      const mockServer = createMockServer();
+      bootstrap(configSchema, {}, () => mockServer);
+
+      expect(mockServer.listenCalled).toBe(false);
+    });
+
+    it("merges static runOptions into defaults", async () => {
+      const mockServer = createMockServer();
+      const onReady = vi.fn();
+      const service = bootstrap(configSchema, () => mockServer);
+
+      const runPromise = service.run({ port: 5000, host: "0.0.0.0", onReady });
+
+      await new Promise((r) => setTimeout(r, 20));
+
+      expect(mockServer.listenOptions).toEqual({ port: 5000, host: "0.0.0.0" });
+      expect(onReady).toHaveBeenCalledOnce();
+
+      process.emit("SIGTERM", "SIGTERM");
+      await runPromise;
+    });
+
+    it("supports runOptions as config-aware function", async () => {
+      const portSchema = schema({
+        serverPort: field({ type: z.number(), default: 4444 }),
+      });
+      const mockServer = createMockServer();
+      const onReady = vi.fn();
+      const service = bootstrap(portSchema, () => mockServer);
+
+      const runPromise = service.run({
+        port: 4444,
+        onReady,
+      });
+
+      await new Promise((r) => setTimeout(r, 20));
+
+      expect(mockServer.listenOptions).toEqual({ port: 4444 });
+      expect(onReady).toHaveBeenCalledOnce();
+
+      process.emit("SIGTERM", "SIGTERM");
+      await runPromise;
+    });
+  });
 });
