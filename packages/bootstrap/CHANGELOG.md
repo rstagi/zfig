@@ -1,5 +1,14 @@
 # @confts/bootstrap
 
+## 0.9.11
+
+### Patch Changes
+
+- ea858e9: Update and detail READMEs
+- Updated dependencies [ea858e9]
+  - confts@0.9.11
+  - @confts/yaml-loader@0.9.11
+
 ## 0.9.10
 
 ### Patch Changes

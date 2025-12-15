@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.11
+
+### Patch Changes
+
+- ea858e9: Update and detail READMEs
+
 ## 0.9.10
 
 ## 0.9.9
