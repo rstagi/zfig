@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.7
+
+### Patch Changes
+
+- f21d9a9: Make includeDiagnostics optional in toDebugObject
+
 ## 0.9.6
 
 ### Patch Changes
