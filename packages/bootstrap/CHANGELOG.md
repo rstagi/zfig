@@ -1,5 +1,13 @@
 # @confts/bootstrap
 
+## 0.9.4
+
+### Patch Changes
+
+- 322cf76: Add autorun options
+  - confts@0.9.4
+  - @confts/yaml-loader@0.9.4
+
 ## 0.9.3
 
 ### Patch Changes
