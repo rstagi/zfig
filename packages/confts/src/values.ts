@@ -3,7 +3,7 @@ import { isAbsolute, join } from "node:path";
 import { loadEnv } from "./loaders/env";
 import { loadSecretFile } from "./loaders/secretFile";
 import { ConfigError, formatValue } from "./errors";
-import type { ConfigSource, ConftsSchema, InferSchema, DiagnosticEvent, ResolvedConfig } from "./types";
+import type { ConfigSource, ConftsSchema, DiagnosticEvent, ResolvedConfig } from "./types";
 import { DiagnosticsCollector } from "./diagnostics";
 
 export interface ResolveOptions {
