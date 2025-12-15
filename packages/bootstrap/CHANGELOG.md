@@ -1,5 +1,14 @@
 # @confts/bootstrap
 
+## 0.9.6
+
+### Patch Changes
+
+- 297b91e: Generalize `resolve` function.
+- Updated dependencies [297b91e]
+  - confts@0.9.6
+  - @confts/yaml-loader@0.9.6
+
 ## 0.9.5
 
 ### Patch Changes
