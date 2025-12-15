@@ -1,6 +1,6 @@
 {
   "name": "@confts/bootstrap",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "Server bootstrap helper for confts configuration library",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -35,8 +35,8 @@
     "directory": "packages/bootstrap"
   },
   "peerDependencies": {
-    "confts": "^0.9.4",
-    "@confts/yaml-loader": "^0.9.4"
+    "confts": "^0.9.5",
+    "@confts/yaml-loader": "^0.9.5"
   },
   "peerDependenciesMeta": {
     "@confts/yaml-loader": {
