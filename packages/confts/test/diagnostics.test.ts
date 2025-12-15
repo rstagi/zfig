@@ -265,7 +265,7 @@ describe("toDebugObject() with diagnostics", () => {
       port: field({ type: z.number(), default: 3000 }),
     });
     const config = resolveValues(s, { env: { HOST: "localhost" } });
-    const debug = config.toDebugObject();
+    const debug = config.toDebugObject({ includeDiagnostics: true });
     expect(debug).toHaveProperty("config");
     expect(debug).toHaveProperty("diagnostics");
   });
@@ -276,7 +276,7 @@ describe("toDebugObject() with diagnostics", () => {
       port: field({ type: z.number(), default: 3000 }),
     });
     const config = resolveValues(s, { env: { HOST: "localhost" } });
-    const debug = config.toDebugObject();
+    const debug = config.toDebugObject({ includeDiagnostics: true });
     expect(debug.config).toEqual({
       host: { value: "localhost", source: "env:HOST" },
       port: { value: 3000, source: "default" },
@@ -286,7 +286,7 @@ describe("toDebugObject() with diagnostics", () => {
   it("diagnostics contains events array", () => {
     const s = schema({ host: field({ type: z.string(), default: "localhost" }) });
     const config = resolveValues(s, { env: {} });
-    const debug = config.toDebugObject();
+    const debug = config.toDebugObject({ includeDiagnostics: true });
     expect(Array.isArray(debug.diagnostics)).toBe(true);
   });
 
@@ -298,7 +298,7 @@ describe("toDebugObject() with diagnostics", () => {
       },
     });
     const config = resolveValues(s, { env: { DB_HOST: "localhost" } });
-    const debug = config.toDebugObject();
+    const debug = config.toDebugObject({ includeDiagnostics: true });
     expect(debug.config).toEqual({
       db: {
         host: { value: "localhost", source: "env:DB_HOST" },
@@ -313,7 +313,7 @@ describe("toDebugObject() with diagnostics", () => {
       password: field({ type: z.string(), default: "secret123", sensitive: true }),
     });
     const config = resolveValues(s, { env: {} });
-    const debug = config.toDebugObject();
+    const debug = config.toDebugObject({ includeDiagnostics: true });
     expect(debug.config).toEqual({
       host: { value: "localhost", source: "default" },
       password: { value: "[REDACTED]", source: "default" },
@@ -323,7 +323,7 @@ describe("toDebugObject() with diagnostics", () => {
   it("diagnostics match getDiagnostics output", () => {
     const s = schema({ host: field({ type: z.string(), default: "localhost" }) });
     const config = resolveValues(s, { env: {} });
-    const debug = config.toDebugObject();
+    const debug = config.toDebugObject({ includeDiagnostics: true });
     expect(debug.diagnostics).toEqual(getDiagnostics(config));
   });
 });

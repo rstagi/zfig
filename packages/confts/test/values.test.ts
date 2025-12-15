@@ -358,13 +358,38 @@ describe("resolveValues()", () => {
   });
 
   describe("toDebugObject()", () => {
+    it("excludes diagnostics by default", () => {
+      const s = schema({ host: field({ type: z.string(), default: "localhost" }) });
+      const config = resolveValues(s, { env: {} });
+      const debug = config.toDebugObject();
+      expect(debug).toHaveProperty("config");
+      expect(debug).not.toHaveProperty("diagnostics");
+    });
+
+    it("excludes diagnostics when includeDiagnostics is false", () => {
+      const s = schema({ host: field({ type: z.string(), default: "localhost" }) });
+      const config = resolveValues(s, { env: {} });
+      const debug = config.toDebugObject({ includeDiagnostics: false });
+      expect(debug).toHaveProperty("config");
+      expect(debug).not.toHaveProperty("diagnostics");
+    });
+
+    it("includes diagnostics when includeDiagnostics is true", () => {
+      const s = schema({ host: field({ type: z.string(), default: "localhost" }) });
+      const config = resolveValues(s, { env: {} });
+      const debug = config.toDebugObject({ includeDiagnostics: true });
+      expect(debug).toHaveProperty("config");
+      expect(debug).toHaveProperty("diagnostics");
+      expect(Array.isArray(debug.diagnostics)).toBe(true);
+    });
+
     it("returns values with embedded sources", () => {
       const s = schema({
         host: field({ type: z.string(), env: "HOST" }),
         port: field({ type: z.number(), default: 3000 }),
       });
       const config = resolveValues(s, { env: { HOST: "localhost" } });
-      const debug = config.toDebugObject();
+      const debug = config.toDebugObject({ includeDiagnostics: true });
       expect(debug.config).toEqual({
         host: { value: "localhost", source: "env:HOST" },
         port: { value: 3000, source: "default" },

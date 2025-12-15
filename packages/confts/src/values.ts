@@ -87,9 +87,9 @@ export function resolveValues<S extends ConftsSchema<Record<string, unknown>>>(
   });
 
   Object.defineProperty(result, "toDebugObject", {
-    value: () => ({
+    value: (options?: { includeDiagnostics?: boolean }) => ({
       config: buildConfigDebugObject(schema, result, sources),
-      diagnostics: getDiagnostics(result) ?? [],
+      ...(options?.includeDiagnostics && { diagnostics: getDiagnostics(result) ?? [] }),
     }),
     enumerable: false,
     writable: false,
