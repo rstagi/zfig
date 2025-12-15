@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.5
+
+### Patch Changes
+
+- 2370deb: Add diagnostics capabilities
+
 ## 0.9.4
 
 ## 0.9.3
