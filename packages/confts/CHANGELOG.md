@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.6
+
+### Patch Changes
+
+- 297b91e: Generalize `resolve` function.
+
 ## 0.9.5
 
 ### Patch Changes
