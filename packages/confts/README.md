@@ -155,6 +155,24 @@ import { resolve } from "confts";
 const config = resolve(configSchema, { configPath: "./config.yaml" });
 ```
 
+## Initial Values
+
+Provide baseline values that can be overridden by config files, env vars, or override:
+
+```typescript
+const config = resolve(configSchema, {
+  initialValues: { db: { host: "dev-host", port: 5433 } },
+  configPath: "./config.json",
+});
+```
+
+Resolution priority: `override` > `env` > `secretFile` > `configFile` > `initialValues` > `default`.
+
+Use cases:
+- Programmatic defaults that differ from schema defaults
+- Framework/library defaults that apps can override
+- Test fixtures with sensible baseline values
+
 ## Type Coercion
 
 Use `z.coerce.*` for automatic type conversion from env vars:
@@ -168,57 +186,110 @@ schema({
 
 ## Debugging
 
+With multiple config sources (env, files, secrets, defaults), it's easy to lose track of where a value came from. Source tracing helps you answer: *"Why is the database connecting to the wrong host?"*
+
+### Why You Need This
+
+**Scenario**: Your app connects to the wrong database in staging.
+
+```typescript
+const config = resolve(configSchema, { configPath: "./config.json" });
+console.log(config.db.host); // "prod-db.example.com" — but why?
+```
+
+Without source tracing, you'd have to manually check: env vars? config file? secrets? defaults?
+
+With confts, just ask:
+
+```typescript
+import { getSources } from "confts";
+
+console.log(getSources(config));
+// {
+//   "db.host": "env:DB_HOST",        ← env var is overriding your config file!
+//   "db.port": "file:./config.json",
+//   "db.password": "secretFile:db-password"
+// }
+```
+
+Now you know: someone set `DB_HOST` in the environment, overriding your config file.
+
 ### Source Tracking
 
 ```typescript
 import { resolve, getSources } from "confts";
 
-const config = resolve(configSchema);
+const config = resolve(configSchema, { configPath: "./config.json" });
 
-// Get source for each value
+// Map of field path → source identifier
 getSources(config);
-// { "db.host": "env:DB_HOST", "db.port": "default", "appName": "literal" }
+// { "db.host": "env:DB_HOST", "db.port": "file:./config.json", "name": "default" }
 
-// As JSON string
+// As JSON string (useful for logging)
 config.toSourceString();
-// '{"db.host":"env:DB_HOST","db.port":"default"}'
+// '{"db.host":"env:DB_HOST","db.port":"file:./config.json","name":"default"}'
 ```
 
+**Source identifiers:**
+| Identifier | Meaning |
+|------------|---------|
+| `env:VAR_NAME` | Environment variable |
+| `file:./path` | Config file |
+| `secretFile:name` | Secret file |
+| `default` | Schema default value |
+| `initial` | `initialValues` option |
+| `override` | `override` option |
+| `literal` | Literal value in schema |
+
 ### Debug Object
+
+Get values and sources together — useful for startup logs or admin endpoints:
 
 ```typescript
 config.toDebugObject();
 // {
 //   config: {
 //     "db": {
-//        "host": { value: "localhost", source: "env:DB_HOST" },
-//        "port": { value: 5432, source: "default" }
+//        "host": { value: "prod-db.example.com", source: "env:DB_HOST" },
+//        "port": { value: 5432, source: "file:./config.json" },
+//        "password": { value: "[REDACTED]", source: "secretFile:db-password" }
 //     }
 //   }
 // }
-
-config.toDebugObject({ includeDiagnostics: true });
-// includes diagnostics array with resolution events, see below
 ```
 
+Sensitive values are automatically redacted.
+
 ### Diagnostics
+
+For deeper debugging, get the full resolution trace — what sources were checked for each value:
 
 ```typescript
 import { getDiagnostics } from "confts";
 
 getDiagnostics(config);
 // [
-//   { type: "configPath", path: "./config.json", reason: "provided in options" },
-//   { type: "loader", extension: ".json" },
-//   { type: "sourceDecision", key: "db.host", source: "env:DB_HOST", tried: [...] }
+//   { type: "configPath", picked: "./config.json", candidates: ["option:./config.json"], reason: "provided" },
+//   { type: "loader", format: ".json", used: true },
+//   { type: "sourceDecision", key: "db.host", picked: "env:DB_HOST", tried: ["env:DB_HOST", "file:./config.json", "default"] },
+//   { type: "sourceDecision", key: "db.port", picked: "file:./config.json", tried: ["env:DB_PORT", "file:./config.json", "default"] }
 // ]
 ```
 
-Diagnostic event types:
-- `configPath` - which config file was selected and why
-- `loader` - which file format loader was used
-- `sourceDecision` - which source provided each value
-- `note` - additional info messages
+The `tried` array shows all sources checked in priority order. Useful when you expected a value from one source but another took precedence.
+
+**Event types:**
+- `configPath` — which config file was selected and why
+- `loader` — which file format loader was used
+- `sourceDecision` — which source provided each value, and what else was tried
+- `note` — additional info messages
+
+Include diagnostics in debug object:
+
+```typescript
+config.toDebugObject({ includeDiagnostics: true });
+// { config: {...}, diagnostics: [...] }
+```
 
 ## Sensitive Values
 

@@ -28,7 +28,7 @@ import { schema, field, resolve } from "confts";
 import { z } from "zod";
 
 const configSchema = schema({
-  appName: "my-app", // literal value
+  name: field({ type: z.string(), env: "APP_NAME", default: "my-app" }),
   db: {
     host: field({ type: z.string(), env: "DB_HOST", default: "localhost" }),
     port: field({ type: z.coerce.number(), env: "DB_PORT", default: 5432 }),
@@ -42,55 +42,19 @@ const configSchema = schema({
 });
 
 const config = resolve(configSchema, { configPath: "./config.json" });
-// config is fully typed: { appName: "my-app", db: { host: string, port: number, password: string } }
+// config is fully typed: { name: string, db: { host: string, port: number, password: string } }
 ```
 
-## Bootstrap
+Config file values override defaults, env vars override file:
 
-Have you ever struggled in properly loading the configuration at server startup and testing?
-
-Bootstrap automatically abstracts all that for you by providing server lifecycle management with graceful shutdown, with clean configuration management and override.
-
-```bash
-npm install @confts/bootstrap
-```
-
-### Runtime (autorun)
-
-```typescript
-// app.ts
-import { schema, field } from "confts";
-import { bootstrap } from "@confts/bootstrap";
-import { z } from "zod";
-import express from "express";
-
-const configSchema = schema({
-  port: field({ type: z.number(), env: "PORT", default: 3000 }),
-});
-
-export default bootstrap(
-  configSchema,
-  { autorun: { enabled: true, meta: import.meta } },
-  async (config) => {
-    const app = express();
-    app.get("/health", (req, res) => res.send("ok"));
-    return app;
+```json
+// config.json
+{
+  "db": {
+    "host": "production-db.example.com"
   }
-);
-
-// node app.ts → auto-runs server
-// import from app.ts → just exports service (for tests)
+}
 ```
-
-### Testing
-
-```typescript
-import service from "./app";
-
-const { server } = await service.create({ override: { dbUrl: 'localhost:5432' } });
-```
-
-See [@confts/bootstrap README](packages/bootstrap/README.md) for details.
 
 ## Resolution Priority
 
@@ -102,6 +66,26 @@ Values are resolved in order (highest to lowest):
 4. **Config file** - JSON/YAML file
 5. **Initial values** - `initialValues` option in resolve
 6. **Default** - `default` field option
+
+## Source Tracing
+
+Track where each config value came from:
+
+```typescript
+import { getSources } from "confts";
+
+console.log(getSources(config));
+// { "name": "default", "db.host": "file:./config.json", "db.port": "env:DB_PORT", "db.password": "secretFile:db-password" }
+
+console.log(config.toDebugObject());
+// { "name": { "value": "appName", "source": "default" }, ... }
+```
+
+See [confts README](packages/confts/README.md#debugging) for full debugging API.
+
+## Bootstrap
+
+Server lifecycle management with graceful shutdown. Simplifies config loading at startup and in tests. See [@confts/bootstrap](packages/bootstrap/README.md) for details.
 
 ## Packages
 
