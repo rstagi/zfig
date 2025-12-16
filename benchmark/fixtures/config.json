@@ -1,0 +1,18 @@
+{
+  "host": "localhost",
+  "port": 3000,
+  "debug": true,
+  "database": {
+    "host": "db.example.com",
+    "port": 5432,
+    "name": "myapp",
+    "pool": {
+      "min": 2,
+      "max": 10
+    }
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600
+  }
+}

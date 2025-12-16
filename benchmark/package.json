@@ -1,0 +1,24 @@
+{
+  "name": "confts-benchmark",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "tsx src/run.ts"
+  },
+  "dependencies": {
+    "tinybench": "^2.9.0",
+    "confts": "file:../packages/confts",
+    "convict": "^6.2.4",
+    "@t3-oss/env-core": "^0.13.10",
+    "envalid": "^8.1.1",
+    "zod-config": "^1.4.0",
+        "zod": "^4.2.0",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/convict": "^6.1.6",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}
