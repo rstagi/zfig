@@ -389,6 +389,23 @@ resolve(schema, {
 });
 ```
 
+## Performance
+
+confts is designed for startup-time config loading where correctness and debuggability matter more than raw speed. That said, it performs well:
+
+| Scenario | confts | vs zod-config | vs convict | vs @t3-oss/env-core |
+|----------|--------|---------------|------------|---------------------|
+| Env only | 704K ops/sec | - | - | **20x faster** |
+| Env + validation | 763K ops/sec | 0.20x | **4.2x faster** | **22x faster** |
+| File + nested | 74K ops/sec | 0.70x | **2.2x faster** | - |
+
+Key points:
+- **Fastest** for simple env-only loading (1.7x faster than envalid)
+- Multi-source resolution adds overhead vs single-source libs
+- 74K ops/sec = ~13μs per resolve - plenty fast for startup config
+
+See [benchmark/](../../benchmark/) for full comparison.
+
 ## License
 
 MIT
