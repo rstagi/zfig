@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.13
+
+### Patch Changes
+
+- 66baa88: Optimizations and Benchmark
+
 ## 0.9.12
 
 ### Patch Changes
