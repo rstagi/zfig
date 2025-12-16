@@ -56,8 +56,12 @@ export function resolveValues<S extends ConftsSchema<Record<string, unknown>>>(
   const { value, sources } = resolveValue(schema, [], initialValues, fileValues, env, secretsPath, override, configPath, collector);
   const result = value as ResolvedConfig<S>;
 
+  let cachedRedacted: unknown;
   Object.defineProperty(result, "toString", {
-    value: () => JSON.stringify(redactValue(schema, result), null, 2),
+    value: () => {
+      cachedRedacted ??= redactValue(schema, result);
+      return JSON.stringify(cachedRedacted, null, 2);
+    },
     enumerable: false,
     writable: false,
   });
@@ -86,11 +90,15 @@ export function resolveValues<S extends ConftsSchema<Record<string, unknown>>>(
     writable: false,
   });
 
+  let cachedDebugConfig: unknown;
   Object.defineProperty(result, "toDebugObject", {
-    value: (options?: { includeDiagnostics?: boolean }) => ({
-      config: buildConfigDebugObject(schema, result, sources),
-      ...(options?.includeDiagnostics && { diagnostics: getDiagnostics(result) ?? [] }),
-    }),
+    value: (options?: { includeDiagnostics?: boolean }) => {
+      cachedDebugConfig ??= buildConfigDebugObject(schema, result, sources);
+      return {
+        config: cachedDebugConfig,
+        ...(options?.includeDiagnostics && { diagnostics: getDiagnostics(result) ?? [] }),
+      };
+    },
     enumerable: false,
     writable: false,
   });
@@ -130,20 +138,9 @@ function resolveValue(
   const tried: string[] = [];
 
   // Get nested values for this specific key path
-  const overrideValue = path.reduce<unknown>((acc, key) => {
-    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key];
-    return undefined;
-  }, override);
-
-  const initialValue = path.reduce<unknown>((acc, key) => {
-    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key];
-    return undefined;
-  }, initialValues);
-
-  const fileValue = path.reduce<unknown>((acc, key) => {
-    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key];
-    return undefined;
-  }, fileValues);
+  const overrideValue = getValueAtPath(override, path);
+  const initialValue = getValueAtPath(initialValues, path);
+  const fileValue = getValueAtPath(fileValues, path);
 
   // Resolution priority: override > env > secretFile > fileValues > initialValues > default
   let value: unknown;
@@ -291,4 +288,16 @@ function getMeta(schema: ZodTypeAny): KeyMeta | undefined {
 
 function getDefType(schema: ZodTypeAny): string | undefined {
   return (schema._zod?.def as { type?: string } | undefined)?.type;
+}
+
+function getValueAtPath(obj: unknown, path: string[]): unknown {
+  let current = obj;
+  for (const key of path) {
+    if (current && typeof current === "object") {
+      current = (current as Record<string, unknown>)[key];
+    } else {
+      return undefined;
+    }
+  }
+  return current;
 }

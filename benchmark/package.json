@@ -13,7 +13,7 @@
     "@t3-oss/env-core": "^0.13.10",
     "envalid": "^8.1.1",
     "zod-config": "^1.4.0",
-        "zod": "^4.2.0",
+    "zod": "^4.2.0",
     "tsx": "^4.21.0"
   },
   "devDependencies": {
