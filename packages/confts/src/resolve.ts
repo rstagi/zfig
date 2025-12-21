@@ -42,7 +42,8 @@ export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
       throw new ConfigError(
         `Unsupported config file extension: ${ext}. Supported: ${supported || "none"}. Install @confts/yaml-loader for YAML support.`,
         configPath,
-        false
+        false,
+        collector.getEvents()
       );
     }
 
@@ -54,7 +55,8 @@ export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
       throw new ConfigError(
         `Config file not found: ${configPath}`,
         configPath,
-        false
+        false,
+        collector.getEvents()
       );
     }
   } else {

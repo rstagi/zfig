@@ -6,7 +6,7 @@ import express from "express";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { schema, field } from "confts";
+import { schema, field, ConfigError } from "confts";
 import { bootstrap } from "../src";
 
 // Mock server implementation (callback-based)
@@ -347,6 +347,39 @@ describe("bootstrap()", () => {
 
       process.emit("SIGTERM", "SIGTERM");
       await runPromise;
+    });
+  });
+
+  describe("onError", () => {
+    it("receives ConfigError with diagnostics on config failure", async () => {
+      const requiredSchema = schema({
+        port: field({ type: z.number(), default: 3000 }),
+        apiKey: field({ type: z.string() }), // required, no default
+      });
+      const mockServer = createMockServer();
+      const onError = vi.fn();
+
+      const service = bootstrap(requiredSchema, { onError, env: {} }, () => mockServer);
+
+      await expect(service.create()).rejects.toThrow(ConfigError);
+      expect(onError).toHaveBeenCalledOnce();
+      const err = onError.mock.calls[0][0] as ConfigError;
+      expect(err).toBeInstanceOf(ConfigError);
+      expect(err.diagnostics).toBeDefined();
+      expect(err.diagnostics!.some((d) => d.type === "sourceDecision" && d.key === "port")).toBe(true);
+    });
+
+    it("receives factory errors too", async () => {
+      const onError = vi.fn();
+      const factoryError = new Error("factory failed");
+
+      const service = bootstrap(configSchema, { onError }, () => {
+        throw factoryError;
+      });
+
+      await expect(service.create()).rejects.toThrow("factory failed");
+      expect(onError).toHaveBeenCalledOnce();
+      expect(onError).toHaveBeenCalledWith(factoryError);
     });
   });
 });

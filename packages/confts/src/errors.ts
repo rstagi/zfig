@@ -1,10 +1,13 @@
+import type { DiagnosticEvent } from "./types";
+
 export class ConfigError extends Error {
   name = "ConfigError";
 
   constructor(
     message: string,
     public readonly path: string,
-    public readonly sensitive: boolean
+    public readonly sensitive: boolean,
+    public readonly diagnostics?: DiagnosticEvent[]
   ) {
     super(message);
   }

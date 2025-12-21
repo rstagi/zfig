@@ -32,6 +32,19 @@ describe("resolve()", () => {
       const s = schema({ key: field({ type: z.string() }) });
       expect(() => resolve(s, { configPath: "/nonexistent/config.json", env: {} })).toThrow(ConfigError);
     });
+
+    it("attaches diagnostics to ConfigError on missing file", () => {
+      const s = schema({ key: field({ type: z.string() }) });
+      try {
+        resolve(s, { configPath: "/nonexistent/config.json", env: {} });
+        expect.fail("should throw");
+      } catch (e) {
+        expect(e).toBeInstanceOf(ConfigError);
+        const err = e as ConfigError;
+        expect(err.diagnostics).toBeDefined();
+        expect(err.diagnostics!.some((d) => d.type === "loader" && d.used)).toBe(true);
+      }
+    });
   });
 
   describe("unsupported formats without loader", () => {
@@ -56,6 +69,21 @@ describe("resolve()", () => {
       const s = schema({ key: field({ type: z.string() }) });
       expect(() => resolve(s, { configPath, env: {} })).toThrow(ConfigError);
       expect(() => resolve(s, { configPath, env: {} })).toThrow(/unsupported/i);
+    });
+
+    it("attaches diagnostics to ConfigError on unsupported extension", () => {
+      const configPath = join(tempDir, "config.toml");
+      writeFileSync(configPath, "key = value");
+      const s = schema({ key: field({ type: z.string() }) });
+      try {
+        resolve(s, { configPath, env: {} });
+        expect.fail("should throw");
+      } catch (e) {
+        expect(e).toBeInstanceOf(ConfigError);
+        const err = e as ConfigError;
+        expect(err.diagnostics).toBeDefined();
+        expect(err.diagnostics!.some((d) => d.type === "loader" && !d.used)).toBe(true);
+      }
     });
   });
 

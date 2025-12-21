@@ -198,7 +198,8 @@ function resolveValue(
     throw new ConfigError(
       `Missing required config at '${pathStr}' (value: ${formatValue(value, sensitive)})`,
       pathStr,
-      sensitive
+      sensitive,
+      collector.getEvents()
     );
   }
 
@@ -208,7 +209,8 @@ function resolveValue(
     throw new ConfigError(
       `Invalid config at '${pathStr}': ${result.error.issues[0]?.message} (value: ${formatValue(value, sensitive)})`,
       pathStr,
-      sensitive
+      sensitive,
+      collector.getEvents()
     );
   }
 

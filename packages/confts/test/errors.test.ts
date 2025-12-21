@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ConfigError, formatValue } from "../src/errors";
+import type { DiagnosticEvent } from "../src/types";
 
 describe("ConfigError", () => {
   it("stores path and sensitive flag", () => {
@@ -13,6 +14,19 @@ describe("ConfigError", () => {
   it("is instanceof Error", () => {
     const err = new ConfigError("msg", "key", false);
     expect(err).toBeInstanceOf(Error);
+  });
+
+  it("stores diagnostics when provided", () => {
+    const diagnostics: DiagnosticEvent[] = [
+      { type: "sourceDecision", key: "db.host", picked: "env:DB_HOST", tried: ["env:DB_HOST"] },
+    ];
+    const err = new ConfigError("missing value", "db.password", true, diagnostics);
+    expect(err.diagnostics).toEqual(diagnostics);
+  });
+
+  it("has undefined diagnostics when not provided", () => {
+    const err = new ConfigError("msg", "key", false);
+    expect(err.diagnostics).toBeUndefined();
   });
 });
 

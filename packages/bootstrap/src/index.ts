@@ -47,6 +47,7 @@ export type AutorunOptions<T> =
 
 export interface StartupOptions<T = unknown> extends ResolveParams {
   autorun?: AutorunOptions<T>;
+  onError?: (error: Error) => void;
 }
 
 // Overload: bootstrap(schema, factory)
@@ -94,11 +95,18 @@ export function bootstrap<
 
   const service: Service<S, T> = {
     async create(createOptions?: ResolveParams): Promise<{ server: T, config: ResolvedConfig<S> }> {
-      const config = resolveConfig(createOptions);
-      return {
-        server: await factory(config),
-        config,
-      };
+      try {
+        const config = resolveConfig(createOptions);
+        return {
+          server: await factory(config),
+          config,
+        };
+      } catch (error) {
+        if (options.onError && error instanceof Error) {
+          options.onError(error);
+        }
+        throw error;
+      }
     },
 
     async run(runOptions?: RunOptions): Promise<void> {

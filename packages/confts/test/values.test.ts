@@ -197,6 +197,40 @@ describe("resolveValues()", () => {
       const s = schema({ port: field({ type: z.number(), env: "PORT" }) });
       expect(() => resolveValues(s, { env: { PORT: "not-a-number" } })).toThrow(ConfigError);
     });
+
+    it("attaches diagnostics to ConfigError on missing required", () => {
+      const s = schema({
+        port: field({ type: z.number(), default: 3000 }),
+        host: field({ type: z.string(), env: "HOST" }),
+      });
+      try {
+        resolveValues(s, { env: {} });
+        expect.fail("should throw");
+      } catch (e) {
+        expect(e).toBeInstanceOf(ConfigError);
+        const err = e as ConfigError;
+        expect(err.diagnostics).toBeDefined();
+        // port resolved before host failed
+        expect(err.diagnostics!.some((d) => d.type === "sourceDecision" && d.key === "port")).toBe(true);
+      }
+    });
+
+    it("attaches diagnostics to ConfigError on validation fail", () => {
+      const s = schema({
+        host: field({ type: z.string(), default: "localhost" }),
+        port: field({ type: z.number(), env: "PORT" }),
+      });
+      try {
+        resolveValues(s, { env: { PORT: "not-a-number" } });
+        expect.fail("should throw");
+      } catch (e) {
+        expect(e).toBeInstanceOf(ConfigError);
+        const err = e as ConfigError;
+        expect(err.diagnostics).toBeDefined();
+        // host resolved before port failed validation
+        expect(err.diagnostics!.some((d) => d.type === "sourceDecision" && d.key === "host")).toBe(true);
+      }
+    });
   });
 
   describe("secretsPath", () => {
