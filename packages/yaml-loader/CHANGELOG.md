@@ -1,5 +1,12 @@
 # @confts/yaml-loader
 
+## 0.9.14
+
+### Patch Changes
+
+- Updated dependencies [86d410d]
+  - confts@0.9.14
+
 ## 0.9.13
 
 ### Patch Changes

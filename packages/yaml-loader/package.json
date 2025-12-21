@@ -1,6 +1,6 @@
 {
   "name": "@confts/yaml-loader",
-  "version": "0.9.13",
+  "version": "0.9.14",
   "description": "YAML loader for confts configuration library",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -36,7 +36,7 @@
     "directory": "packages/yaml-loader"
   },
   "peerDependencies": {
-    "confts": "^0.9.13"
+    "confts": "^0.9.14"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"

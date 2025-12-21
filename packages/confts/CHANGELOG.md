@@ -1,5 +1,11 @@
 # confts
 
+## 0.9.14
+
+### Patch Changes
+
+- 86d410d: Better error handling with diagnostics
+
 ## 0.9.13
 
 ### Patch Changes

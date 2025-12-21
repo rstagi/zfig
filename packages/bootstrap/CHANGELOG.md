@@ -1,5 +1,14 @@
 # @confts/bootstrap
 
+## 0.9.14
+
+### Patch Changes
+
+- 86d410d: Better error handling with diagnostics
+- Updated dependencies [86d410d]
+  - confts@0.9.14
+  - @confts/yaml-loader@0.9.14
+
 ## 0.9.13
 
 ### Patch Changes
