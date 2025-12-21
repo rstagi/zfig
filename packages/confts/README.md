@@ -359,9 +359,10 @@ try {
   const config = resolve(configSchema);
 } catch (e) {
   if (e instanceof ConfigError) {
-    console.log(e.message);   // error description
-    console.log(e.path);      // "db.host" (dot-notation path)
-    console.log(e.sensitive); // true if value should be redacted
+    console.log(e.message);     // error description
+    console.log(e.path);        // "db.host" (dot-notation path)
+    console.log(e.sensitive);   // true if value should be redacted
+    console.log(e.diagnostics); // diagnostic events collected before error
   }
 }
 ```

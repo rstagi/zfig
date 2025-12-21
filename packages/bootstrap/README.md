@@ -216,6 +216,41 @@ const service = bootstrap(
   {
     autorun: { enabled: true, meta: import.meta },
     configPath: "./config.json",
+    onError: (error) => {
+      console.error("Startup failed:", error);
+    },
+  },
+  (config) => server
+);
+```
+
+### Startup Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `autorun` | `AutorunOptions` | Auto-run configuration |
+| `configPath` | `string` | Path to config file |
+| `env` | `Record<string, string>` | Environment variables |
+| `secretsPath` | `string` | Base path for secrets |
+| `initialValues` | `object` | Base config values |
+| `override` | `object` | Override all sources |
+| `onError` | `(error: Error) => void` | Called on config or factory errors |
+
+### Error Handling
+
+The `onError` callback receives all errors during startup. For config errors, diagnostics are attached:
+
+```typescript
+import { ConfigError } from "confts";
+
+bootstrap(
+  configSchema,
+  {
+    onError: (error) => {
+      if (error instanceof ConfigError && error.diagnostics) {
+        console.error("Config resolution trace:", error.diagnostics);
+      }
+    },
   },
   (config) => server
 );
