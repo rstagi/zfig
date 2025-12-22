@@ -1,13 +1,13 @@
-# confts
+# zfig
 
-[![npm version](https://img.shields.io/npm/v/confts.svg)](https://www.npmjs.com/package/confts)
+[![npm version](https://img.shields.io/npm/v/zfig.svg)](https://www.npmjs.com/package/zfig)
 
 Dev-friendly TypeScript config library wrapping Zod with multi-source value resolution.
 
 ## Install
 
 ```bash
-npm install confts zod
+npm install zfig zod
 ```
 
 ## Schema & Field
@@ -17,7 +17,7 @@ npm install confts zod
 Creates a type-safe config schema from a definition object.
 
 ```typescript
-import { schema, field } from "confts";
+import { schema, field } from "zfig";
 import { z } from "zod";
 
 const config = schema({
@@ -112,7 +112,7 @@ const appSchema = schema({
 ### Using `resolve()`
 
 ```typescript
-import { resolve } from "confts";
+import { resolve } from "zfig";
 
 const config = resolve(configSchema, {
   configPath: "./config.json",
@@ -142,15 +142,15 @@ JSON is supported by default:
 
 ### YAML Support
 
-Install `@confts/yaml-loader` for YAML support:
+Install `@zfig/yaml-loader` for YAML support:
 
 ```bash
-npm install @confts/yaml-loader
+npm install @zfig/yaml-loader
 ```
 
 ```typescript
-import "@confts/yaml-loader"; // side-effect import registers loader
-import { resolve } from "confts";
+import "@zfig/yaml-loader"; // side-effect import registers loader
+import { resolve } from "zfig";
 
 const config = resolve(configSchema, { configPath: "./config.yaml" });
 ```
@@ -199,10 +199,10 @@ console.log(config.db.host); // "prod-db.example.com" — but why?
 
 Without source tracing, you'd have to manually check: env vars? config file? secrets? defaults?
 
-With confts, just ask:
+With zfig, just ask:
 
 ```typescript
-import { getSources } from "confts";
+import { getSources } from "zfig";
 
 console.log(getSources(config));
 // {
@@ -217,7 +217,7 @@ Now you know: someone set `DB_HOST` in the environment, overriding your config f
 ### Source Tracking
 
 ```typescript
-import { resolve, getSources } from "confts";
+import { resolve, getSources } from "zfig";
 
 const config = resolve(configSchema, { configPath: "./config.json" });
 
@@ -265,7 +265,7 @@ Sensitive values are automatically redacted.
 For deeper debugging, get the full resolution trace — what sources were checked for each value:
 
 ```typescript
-import { getDiagnostics } from "confts";
+import { getDiagnostics } from "zfig";
 
 getDiagnostics(config);
 // [
@@ -323,7 +323,7 @@ Sensitive values are redacted in:
 Register custom loaders for different file formats:
 
 ```typescript
-import { registerLoader, getLoader, getSupportedExtensions, clearLoaders } from "confts";
+import { registerLoader, getLoader, getSupportedExtensions, clearLoaders } from "zfig";
 
 // Register a loader
 registerLoader(".toml", (path) => {
@@ -353,7 +353,7 @@ Return `undefined` if file doesn't exist. Throw on parse errors.
 `ConfigError` is thrown when resolution fails:
 
 ```typescript
-import { ConfigError } from "confts";
+import { ConfigError } from "zfig";
 
 try {
   const config = resolve(configSchema);
@@ -397,7 +397,7 @@ Use `z.coerce.number()` for env vars that need type conversion.
 ConfigError: No loader registered for extension ".yaml"
 ```
 
-Install and import `@confts/yaml-loader` for YAML support.
+Install and import `@zfig/yaml-loader` for YAML support.
 
 ### Config file not found
 
@@ -411,7 +411,7 @@ Check `configPath` option or `CONFIG_PATH` env var. JSON loader returns `undefin
 
 ## Advanced Usage
 
-All Zod features work in field types - `.coerce`, `.nonempty()`, `.min()`, `.transform()`, etc. Validation is fully delegated to Zod, so you can use any schema features. The only exception is `.meta()` which confts uses internally for field metadata and will be overridden.
+All Zod features work in field types - `.coerce`, `.nonempty()`, `.min()`, `.transform()`, etc. Validation is fully delegated to Zod, so you can use any schema features. The only exception is `.meta()` which zfig uses internally for field metadata and will be overridden.
 
 ```typescript
 schema({
@@ -463,9 +463,9 @@ resolve(schema, {
 
 ## Performance
 
-confts is designed for startup-time config loading where correctness and debuggability matter more than raw speed. That said, it performs well:
+zfig is designed for startup-time config loading where correctness and debuggability matter more than raw speed. That said, it performs well:
 
-| Scenario | confts | vs zod-config | vs convict | vs @t3-oss/env-core |
+| Scenario | zfig | vs zod-config | vs convict | vs @t3-oss/env-core |
 |----------|--------|---------------|------------|---------------------|
 | Env only | 704K ops/sec | - | - | **20x faster** |
 | Env + validation | 763K ops/sec | 0.20x | **4.2x faster** | **22x faster** |

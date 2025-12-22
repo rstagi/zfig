@@ -1,13 +1,13 @@
-# @confts/yaml-loader
+# @zfig/yaml-loader
 
-[![npm version](https://img.shields.io/npm/v/@confts/yaml-loader.svg)](https://www.npmjs.com/package/@confts/yaml-loader)
+[![npm version](https://img.shields.io/npm/v/@zfig/yaml-loader.svg)](https://www.npmjs.com/package/@zfig/yaml-loader)
 
-YAML file support for confts.
+YAML file support for zfig.
 
 ## Install
 
 ```bash
-npm install confts @confts/yaml-loader
+npm install zfig @zfig/yaml-loader
 ```
 
 ## Usage
@@ -15,8 +15,8 @@ npm install confts @confts/yaml-loader
 Import for side-effects to enable YAML config files:
 
 ```typescript
-import "@confts/yaml-loader";
-import { resolve } from "confts";
+import "@zfig/yaml-loader";
+import { resolve } from "zfig";
 
 const config = resolve(configSchema, { configPath: "./config.yaml" });
 ```
@@ -39,7 +39,7 @@ After import, `resolve()` automatically handles YAML files.
 Parses a YAML file and returns its contents.
 
 ```typescript
-import { loadYaml } from "@confts/yaml-loader";
+import { loadYaml } from "@zfig/yaml-loader";
 
 const data = loadYaml("./config.yaml");
 // { db: { host: "localhost", port: 5432 } }
@@ -66,11 +66,11 @@ logging:
   level: info
 ```
 
-### With confts
+### With zfig
 
 ```typescript
-import "@confts/yaml-loader";
-import { schema, field, resolve } from "confts";
+import "@zfig/yaml-loader";
+import { schema, field, resolve } from "zfig";
 import { z } from "zod";
 
 const configSchema = schema({
@@ -89,7 +89,7 @@ const config = resolve(configSchema, { configPath: "./config.yaml" });
 ### Direct usage
 
 ```typescript
-import { loadYaml } from "@confts/yaml-loader";
+import { loadYaml } from "@zfig/yaml-loader";
 
 const data = loadYaml("./config.yml");
 if (data) {

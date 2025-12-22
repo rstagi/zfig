@@ -106,7 +106,7 @@ describe("sourceDecision events", () => {
   let secretFilePath: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "confts-diag-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zfig-diag-"));
     secretFilePath = join(tempDir, "secret");
     writeFileSync(secretFilePath, "file-secret");
   });
@@ -203,7 +203,7 @@ describe("resolve() diagnostics", () => {
   let configPath: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "confts-resolve-diag-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zfig-resolve-diag-"));
     configPath = join(tempDir, "config.json");
     writeFileSync(configPath, JSON.stringify({ host: "from-file" }));
     registerLoader(".json", (path) => {
@@ -333,7 +333,7 @@ describe("no secret leakage in diagnostics", () => {
   let secretFilePath: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "confts-secrets-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zfig-secrets-"));
     secretFilePath = join(tempDir, "secret");
     writeFileSync(secretFilePath, "super-secret-value");
   });

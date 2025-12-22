@@ -8,7 +8,7 @@ describe("loadSecretFile()", () => {
   let tempDir: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "confts-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zfig-test-"));
   });
 
   afterAll(() => {

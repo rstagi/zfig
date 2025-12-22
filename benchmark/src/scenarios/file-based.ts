@@ -5,7 +5,7 @@ import {
   nodeConfigWrapper,
   convictWrapper,
   zodConfigWrapper,
-  conftsWrapper,
+  zfigWrapper,
 } from "../libs/index.js";
 import type { LibWrapper } from "../libs/index.js";
 
@@ -16,7 +16,7 @@ const libs: LibWrapper[] = [
   nodeConfigWrapper,
   convictWrapper,
   zodConfigWrapper,
-  conftsWrapper,
+  zfigWrapper,
 ];
 
 export async function runFileBased(): Promise<Bench> {

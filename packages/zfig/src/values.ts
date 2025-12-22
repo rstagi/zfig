@@ -3,7 +3,7 @@ import { isAbsolute, join } from "node:path";
 import { loadEnv } from "./loaders/env";
 import { loadSecretFile } from "./loaders/secretFile";
 import { ConfigError, formatValue } from "./errors";
-import type { ConfigSource, ConftsSchema, DiagnosticEvent, ResolvedConfig } from "./types";
+import type { ConfigSource, ZfigSchema, DiagnosticEvent, ResolvedConfig } from "./types";
 import { DiagnosticsCollector } from "./diagnostics";
 
 export interface ResolveOptions {
@@ -30,8 +30,8 @@ interface ResolveResult {
   sources: Record<string, ConfigSource>;
 }
 
-const SOURCES_SYMBOL = Symbol("confts.sources");
-const DIAGNOSTICS_SYMBOL = Symbol("confts.diagnostics");
+const SOURCES_SYMBOL = Symbol("zfig.sources");
+const DIAGNOSTICS_SYMBOL = Symbol("zfig.diagnostics");
 
 export function getSources(config: unknown): Record<string, ConfigSource> | undefined {
   if (config && typeof config === "object") {
@@ -47,7 +47,7 @@ export function getDiagnostics(config: unknown): DiagnosticEvent[] | undefined {
   return undefined;
 }
 
-export function resolveValues<S extends ConftsSchema<Record<string, unknown>>>(
+export function resolveValues<S extends ZfigSchema<Record<string, unknown>>>(
   schema: S,
   options: ResolveOptions = {}
 ): ResolvedConfig<S> {

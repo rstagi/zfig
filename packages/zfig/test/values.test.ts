@@ -12,7 +12,7 @@ describe("resolveValues()", () => {
   let secretFilePath: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "confts-resolver-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zfig-resolver-"));
     secretFilePath = join(tempDir, "secret");
     writeFileSync(secretFilePath, "file-secret");
   });

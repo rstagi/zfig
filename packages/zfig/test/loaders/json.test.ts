@@ -9,7 +9,7 @@ describe("loadJson()", () => {
   let tempDir: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "confts-json-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zfig-json-test-"));
   });
 
   afterAll(() => {

@@ -16,15 +16,15 @@ describe("loadEnv()", () => {
   });
 
   it("uses process.env by default", () => {
-    const originalValue = process.env.TEST_CONFTS_ENV;
-    process.env.TEST_CONFTS_ENV = "test-value";
+    const originalValue = process.env.TEST_ZFIG_ENV;
+    process.env.TEST_ZFIG_ENV = "test-value";
     try {
-      expect(loadEnv("TEST_CONFTS_ENV")).toBe("test-value");
+      expect(loadEnv("TEST_ZFIG_ENV")).toBe("test-value");
     } finally {
       if (originalValue === undefined) {
-        delete process.env.TEST_CONFTS_ENV;
+        delete process.env.TEST_ZFIG_ENV;
       } else {
-        process.env.TEST_CONFTS_ENV = originalValue;
+        process.env.TEST_ZFIG_ENV = originalValue;
       }
     }
   });

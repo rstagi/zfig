@@ -49,7 +49,7 @@ function printResults(name: string, bench: Bench): void {
 }
 
 async function main(): Promise<void> {
-  console.log("\nConfts Benchmark Suite");
+  console.log("\nZfig Benchmark Suite");
   console.log("=".repeat(60));
   console.log("Running benchmarks... (this may take a minute)\n");
 

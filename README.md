@@ -1,6 +1,6 @@
-# confts
+# zfig
 
-[![npm version](https://img.shields.io/npm/v/confts.svg)](https://www.npmjs.com/package/confts)
+[![npm version](https://img.shields.io/npm/v/zfig.svg)](https://www.npmjs.com/package/zfig)
 
 Dev-friendly TypeScript config library wrapping Zod with multi-source value resolution.
 
@@ -18,13 +18,13 @@ Dev-friendly TypeScript config library wrapping Zod with multi-source value reso
 ## Install
 
 ```bash
-npm install confts zod
+npm install zfig zod
 ```
 
 ## Quick Start
 
 ```typescript
-import { schema, field, resolve } from "confts";
+import { schema, field, resolve } from "zfig";
 import { z } from "zod";
 
 const configSchema = schema({
@@ -72,7 +72,7 @@ Values are resolved in order (highest to lowest):
 Track where each config value came from:
 
 ```typescript
-import { getSources } from "confts";
+import { getSources } from "zfig";
 
 console.log(getSources(config));
 // { "name": "default", "db.host": "file:./config.json", "db.port": "env:DB_PORT", "db.password": "secretFile:db-password" }
@@ -81,19 +81,19 @@ console.log(config.toDebugObject());
 // { "name": { "value": "appName", "source": "default" }, ... }
 ```
 
-See [confts README](packages/confts/README.md#debugging) for full debugging API.
+See [zfig README](packages/zfig/README.md#debugging) for full debugging API.
 
 ## Bootstrap
 
-Server lifecycle management with graceful shutdown. Simplifies config loading at startup and in tests. See [@confts/bootstrap](packages/bootstrap/README.md) for details.
+Server lifecycle management with graceful shutdown. Simplifies config loading at startup and in tests. See [@zfig/bootstrap](packages/bootstrap/README.md) for details.
 
 ## Packages
 
 | Package | Description | Docs |
 |---------|-------------|------|
-| `confts` | Core schema, field, resolve | [README](packages/confts/README.md) |
-| `@confts/yaml-loader` | YAML file support (side-effect import) | [README](packages/yaml-loader/README.md) |
-| `@confts/bootstrap` | Server lifecycle management | [README](packages/bootstrap/README.md) |
+| `zfig` | Core schema, field, resolve | [README](packages/zfig/README.md) |
+| `@zfig/yaml-loader` | YAML file support (side-effect import) | [README](packages/yaml-loader/README.md) |
+| `@zfig/bootstrap` | Server lifecycle management | [README](packages/bootstrap/README.md) |
 
 ## License
 

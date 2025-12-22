@@ -22,7 +22,7 @@ export type SchemaDefinition = {
   [key: string]: FieldConfig | SchemaDefinition | string | number | boolean;
 };
 
-export const FIELD_MARKER = Symbol("confts.field");
+export const FIELD_MARKER = Symbol("zfig.field");
 
 export interface MarkedFieldConfig<T extends ZodTypeAny = ZodTypeAny>
   extends FieldConfig<T> {
@@ -48,14 +48,14 @@ export type InferDefinition<D extends Record<string, unknown>> = {
 };
 
 /** Schema with embedded definition type */
-export type ConftsSchema<D extends Record<string, unknown>> = ZodObject<
+export type ZfigSchema<D extends Record<string, unknown>> = ZodObject<
   Record<string, ZodTypeAny>
 > & {
-  readonly _conftsDefinition: D;
+  readonly _zfigDefinition: D;
 };
 
 /** Extract output type from schema */
-export type InferSchema<S> = S extends ConftsSchema<infer D>
+export type InferSchema<S> = S extends ZfigSchema<infer D>
   ? InferDefinition<D>
   : S extends ZodObject<infer _Shape>
     ? z.infer<S>

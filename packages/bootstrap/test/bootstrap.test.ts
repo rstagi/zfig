@@ -6,7 +6,7 @@ import express from "express";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { schema, field, ConfigError } from "confts";
+import { schema, field, ConfigError } from "zfig";
 import { bootstrap } from "../src";
 
 // Mock server implementation (callback-based)
@@ -93,7 +93,7 @@ describe("bootstrap()", () => {
     });
 
     it("options.configPath loads config file (JSON)", async () => {
-      const configDir = mkdtempSync(join(tmpdir(), "confts-startup-"));
+      const configDir = mkdtempSync(join(tmpdir(), "zfig-startup-"));
       writeFileSync(join(configDir, "config.json"), JSON.stringify({ port: 7777, host: "config-host" }));
       try {
         const mockServer = createMockServer();
@@ -234,7 +234,7 @@ describe("bootstrap()", () => {
     let tempDir: string;
 
     beforeAll(() => {
-      tempDir = mkdtempSync(join(tmpdir(), "confts-bootstrap-"));
+      tempDir = mkdtempSync(join(tmpdir(), "zfig-bootstrap-"));
     });
 
     afterAll(() => {

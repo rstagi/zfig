@@ -1,13 +1,13 @@
-# @confts/bootstrap
+# @zfig/bootstrap
 
-[![npm version](https://img.shields.io/npm/v/@confts/bootstrap.svg)](https://www.npmjs.com/package/@confts/bootstrap)
+[![npm version](https://img.shields.io/npm/v/@zfig/bootstrap.svg)](https://www.npmjs.com/package/@zfig/bootstrap)
 
-Server lifecycle management with graceful shutdown for confts.
+Server lifecycle management with graceful shutdown for zfig.
 
 ## Install
 
 ```bash
-npm install confts @confts/bootstrap
+npm install zfig @zfig/bootstrap
 ```
 
 
@@ -18,8 +18,8 @@ npm install confts @confts/bootstrap
 **Create** - returns server without starting:
 
 ```typescript
-import { schema, field } from "confts";
-import { bootstrap } from "@confts/bootstrap";
+import { schema, field } from "zfig";
+import { bootstrap } from "@zfig/bootstrap";
 import { z } from "zod";
 
 const configSchema = schema({
@@ -49,8 +49,8 @@ Automatically run when file is executed directly (not imported).
 ### ESM
 
 ```typescript
-import { schema, field } from "confts";
-import { bootstrap } from "@confts/bootstrap";
+import { schema, field } from "zfig";
+import { bootstrap } from "@zfig/bootstrap";
 import { z } from "zod";
 import express from "express";
 
@@ -75,8 +75,8 @@ export default bootstrap(
 ### CommonJS
 
 ```typescript
-const { schema, field } = require("confts");
-const { bootstrap } = require("@confts/bootstrap");
+const { schema, field } = require("zfig");
+const { bootstrap } = require("@zfig/bootstrap");
 const { z } = require("zod");
 
 const configSchema = schema({
@@ -241,7 +241,7 @@ const service = bootstrap(
 The `onError` callback receives all errors during startup. For config errors, diagnostics are attached:
 
 ```typescript
-import { ConfigError } from "confts";
+import { ConfigError } from "zfig";
 
 bootstrap(
   configSchema,
@@ -289,8 +289,8 @@ await service.run({
 ### Express
 
 ```typescript
-import { schema, field } from "confts";
-import { bootstrap } from "@confts/bootstrap";
+import { schema, field } from "zfig";
+import { bootstrap } from "@zfig/bootstrap";
 import { z } from "zod";
 import express from "express";
 
@@ -313,8 +313,8 @@ export default bootstrap(
 ### Fastify
 
 ```typescript
-import { schema, field } from "confts";
-import { bootstrap } from "@confts/bootstrap";
+import { schema, field } from "zfig";
+import { bootstrap } from "@zfig/bootstrap";
 import { z } from "zod";
 import Fastify from "fastify";
 

@@ -3,13 +3,13 @@ import {
   FIELD_MARKER,
   type FieldConfig,
   type MarkedFieldConfig,
-  type ConftsSchema,
+  type ZfigSchema,
 } from "./types";
 
 export function schema<const D extends Record<string, unknown>>(
   definition: D
-): ConftsSchema<D> {
-  return z.object(buildZodShape(definition)) as ConftsSchema<D>;
+): ZfigSchema<D> {
+  return z.object(buildZodShape(definition)) as ZfigSchema<D>;
 }
 
 export function field<T extends ZodTypeAny>(config: FieldConfig<T>): MarkedFieldConfig<T> {

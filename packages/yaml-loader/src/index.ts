@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { load } from "js-yaml";
-import { registerLoader, ConfigError } from "confts";
+import { registerLoader, ConfigError } from "zfig";
 
 export function loadYaml(path: string): Record<string, unknown> | undefined {
   let content: string;

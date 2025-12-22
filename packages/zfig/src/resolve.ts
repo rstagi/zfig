@@ -2,7 +2,7 @@ import { extname } from "node:path";
 import { getLoader, getSupportedExtensions } from "./loader-registry";
 import { resolveValues } from "./values";
 import { ConfigError } from "./errors";
-import type { ConftsSchema, ResolvedConfig } from "./types";
+import type { ZfigSchema, ResolvedConfig } from "./types";
 import { DiagnosticsCollector } from "./diagnostics";
 
 export interface ResolveOptions {
@@ -13,7 +13,7 @@ export interface ResolveOptions {
   override?: Record<string, unknown>;
 }
 
-export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
+export function resolve<S extends ZfigSchema<Record<string, unknown>>>(
   schema: S,
   options: ResolveOptions = {}
 ): ResolvedConfig<S> {
@@ -40,7 +40,7 @@ export function resolve<S extends ConftsSchema<Record<string, unknown>>>(
       const supported = getSupportedExtensions().join(", ");
       collector.addLoader(ext, false, `unsupported extension, supported: ${supported || "none"}`);
       throw new ConfigError(
-        `Unsupported config file extension: ${ext}. Supported: ${supported || "none"}. Install @confts/yaml-loader for YAML support.`,
+        `Unsupported config file extension: ${ext}. Supported: ${supported || "none"}. Install @zfig/yaml-loader for YAML support.`,
         configPath,
         false,
         collector.getEvents()

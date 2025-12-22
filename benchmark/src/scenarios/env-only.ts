@@ -2,11 +2,11 @@ import { Bench } from "tinybench";
 import {
   envalidWrapper,
   t3EnvWrapper,
-  conftsWrapper,
+  zfigWrapper,
 } from "../libs/index.js";
 import type { LibWrapper } from "../libs/index.js";
 
-const libs: LibWrapper[] = [envalidWrapper, t3EnvWrapper, conftsWrapper];
+const libs: LibWrapper[] = [envalidWrapper, t3EnvWrapper, zfigWrapper];
 
 const testEnv = {
   HOST: "testhost.example.com",

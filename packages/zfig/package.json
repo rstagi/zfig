@@ -1,5 +1,5 @@
 {
-  "name": "confts",
+  "name": "zfig",
   "version": "0.9.14",
   "description": "Dev-friendly TypeScript configuration library with Zod",
   "type": "module",
@@ -34,8 +34,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rstagi/confts.git",
-    "directory": "packages/confts"
+    "url": "git+https://github.com/rstagi/zfig.git",
+    "directory": "packages/zfig"
   },
   "peerDependencies": {
     "zod": "^4.0.0"

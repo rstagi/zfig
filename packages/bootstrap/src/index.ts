@@ -1,7 +1,7 @@
 import { resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolve } from "confts";
-import type { ConftsSchema, ResolvedConfig } from "confts";
+import { resolve } from "zfig";
+import type { ZfigSchema, ResolvedConfig } from "zfig";
 
 export interface ListenOptions {
   port: number;
@@ -22,7 +22,7 @@ export interface ResolveParams {
 }
 
 export interface Service<
-  S extends ConftsSchema<Record<string, unknown>>,
+  S extends ZfigSchema<Record<string, unknown>>,
   T extends ServerLike,
 > {
   create: (options?: ResolveParams) => Promise<{ server: T, config: ResolvedConfig<S> }>;
@@ -52,7 +52,7 @@ export interface StartupOptions<T = unknown> extends ResolveParams {
 
 // Overload: bootstrap(schema, factory)
 export function bootstrap<
-  S extends ConftsSchema<Record<string, unknown>>,
+  S extends ZfigSchema<Record<string, unknown>>,
   T extends ServerLike,
 >(
   configSchema: S,
@@ -61,7 +61,7 @@ export function bootstrap<
 
 // Overload: bootstrap(schema, options, factory)
 export function bootstrap<
-  S extends ConftsSchema<Record<string, unknown>>,
+  S extends ZfigSchema<Record<string, unknown>>,
   T extends ServerLike,
 >(
   configSchema: S,
@@ -71,7 +71,7 @@ export function bootstrap<
 
 // Implementation
 export function bootstrap<
-  S extends ConftsSchema<Record<string, unknown>>,
+  S extends ZfigSchema<Record<string, unknown>>,
   T extends ServerLike,
 >(
   configSchema: S,

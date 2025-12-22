@@ -4,7 +4,7 @@ import {
   t3EnvWrapper,
   convictWrapper,
   zodConfigWrapper,
-  conftsWrapper,
+  zfigWrapper,
 } from "../libs/index.js";
 import type { LibWrapper } from "../libs/index.js";
 
@@ -13,7 +13,7 @@ const libs: LibWrapper[] = [
   t3EnvWrapper,
   convictWrapper,
   zodConfigWrapper,
-  conftsWrapper,
+  zfigWrapper,
 ];
 
 const testEnv = {

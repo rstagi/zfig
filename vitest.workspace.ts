@@ -1,5 +1,5 @@
 export default [
-  "packages/confts",
+  "packages/zfig",
   "packages/yaml-loader",
   "packages/bootstrap",
 ];

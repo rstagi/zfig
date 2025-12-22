@@ -1,4 +1,4 @@
-import { schema, field, resolve } from "confts";
+import { schema, field, resolve } from "zfig";
 import { z } from "zod";
 import type { LibWrapper, EnvOnlyResult, NestedResult } from "./types.js";
 
@@ -31,8 +31,8 @@ const nestedSchema = schema({
   },
 });
 
-export const conftsWrapper: LibWrapper = {
-  name: "confts",
+export const zfigWrapper: LibWrapper = {
+  name: "zfig",
   envOnly: (env: Record<string, string>): EnvOnlyResult => {
     const config = resolve(envOnlySchema, { env });
     return {

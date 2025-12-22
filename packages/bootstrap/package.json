@@ -1,7 +1,7 @@
 {
-  "name": "@confts/bootstrap",
+  "name": "@zfig/bootstrap",
   "version": "0.9.14",
-  "description": "Server bootstrap helper for confts configuration library",
+  "description": "Server bootstrap helper for zfig configuration library",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -24,7 +24,7 @@
   },
   "keywords": [
     "config",
-    "confts",
+    "zfig",
     "bootstrap",
     "server"
   ],
@@ -32,21 +32,21 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rstagi/confts.git",
+    "url": "git+https://github.com/rstagi/zfig.git",
     "directory": "packages/bootstrap"
   },
   "peerDependencies": {
-    "confts": "^0.9.14",
-    "@confts/yaml-loader": "^0.9.14"
+    "zfig": "^0.9.14",
+    "@zfig/yaml-loader": "^0.9.14"
   },
   "peerDependenciesMeta": {
-    "@confts/yaml-loader": {
+    "@zfig/yaml-loader": {
       "optional": true
     }
   },
   "devDependencies": {
-    "confts": "workspace:*",
-    "@confts/yaml-loader": "workspace:*"
+    "zfig": "workspace:*",
+    "@zfig/yaml-loader": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

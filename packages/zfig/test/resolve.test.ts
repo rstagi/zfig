@@ -10,7 +10,7 @@ describe("resolve()", () => {
   let tempDir: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "confts-parser-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zfig-parser-"));
   });
 
   afterAll(() => {

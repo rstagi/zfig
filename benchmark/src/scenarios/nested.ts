@@ -4,14 +4,14 @@ import { fileURLToPath } from "url";
 import {
   convictWrapper,
   zodConfigWrapper,
-  conftsWrapper,
+  zfigWrapper,
 } from "../libs/index.js";
 import type { LibWrapper } from "../libs/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const configPath = resolve(__dirname, "../../fixtures/config.json");
 
-const libs: LibWrapper[] = [convictWrapper, zodConfigWrapper, conftsWrapper];
+const libs: LibWrapper[] = [convictWrapper, zodConfigWrapper, zfigWrapper];
 
 const testEnv = {
   HOST: "override.example.com",

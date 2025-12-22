@@ -50,18 +50,12 @@ importers:
 
   packages/bootstrap:
     devDependencies:
-      '@confts/yaml-loader':
+      '@zfig/yaml-loader':
         specifier: workspace:*
         version: link:../yaml-loader
-      confts:
+      zfig:
         specifier: workspace:*
-        version: link:../confts
-
-  packages/confts:
-    dependencies:
-      zod:
-        specifier: ^4.0.0
-        version: 4.1.13
+        version: link:../zfig
 
   packages/yaml-loader:
     dependencies:
@@ -69,9 +63,15 @@ importers:
         specifier: ^4.1.0
         version: 4.1.1
     devDependencies:
-      confts:
+      zfig:
         specifier: workspace:*
-        version: link:../confts
+        version: link:../zfig
+
+  packages/zfig:
+    dependencies:
+      zod:
+        specifier: ^4.0.0
+        version: 4.1.13
 
 packages:
 

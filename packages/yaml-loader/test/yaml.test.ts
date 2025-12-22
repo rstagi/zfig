@@ -2,14 +2,14 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { ConfigError, getLoader } from "confts";
+import { ConfigError, getLoader } from "zfig";
 import { loadYaml } from "../src";
 
 describe("loadYaml()", () => {
   let tempDir: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "confts-yaml-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zfig-yaml-test-"));
   });
 
   afterAll(() => {

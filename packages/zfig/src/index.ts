@@ -10,7 +10,7 @@ export type {
   DiagnosticEvent,
   FieldConfig,
   SchemaDefinition,
-  ConftsSchema,
+  ZfigSchema,
   InferSchema,
   ResolvedConfig,
   ConfigMethods,
