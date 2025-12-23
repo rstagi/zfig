@@ -1,5 +1,15 @@
 # @zfig/bootstrap
 
+## 0.9.15
+
+### Patch Changes
+
+- de1186e: Rename to zfig
+- Updated dependencies [68b2ca8]
+- Updated dependencies [de1186e]
+  - zfig@0.9.15
+  - @zfig/yaml-loader@0.9.15
+
 ## 0.9.14
 
 ### Patch Changes

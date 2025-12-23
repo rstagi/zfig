@@ -1,6 +1,6 @@
 {
   "name": "@zfig/yaml-loader",
-  "version": "0.9.14",
+  "version": "0.9.15",
   "description": "YAML loader for zfig configuration library",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -36,7 +36,7 @@
     "directory": "packages/yaml-loader"
   },
   "peerDependencies": {
-    "zfig": "^0.9.14"
+    "zfig": "^0.9.15"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"

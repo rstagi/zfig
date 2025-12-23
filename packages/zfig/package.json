@@ -1,6 +1,6 @@
 {
   "name": "zfig",
-  "version": "0.9.14",
+  "version": "0.9.15",
   "description": "Dev-friendly TypeScript configuration library with Zod",
   "type": "module",
   "main": "./dist/index.cjs",

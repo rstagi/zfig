@@ -1,6 +1,6 @@
 {
   "name": "@zfig/bootstrap",
-  "version": "0.9.14",
+  "version": "0.9.15",
   "description": "Server bootstrap helper for zfig configuration library",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -36,8 +36,8 @@
     "directory": "packages/bootstrap"
   },
   "peerDependencies": {
-    "zfig": "^0.9.14",
-    "@zfig/yaml-loader": "^0.9.14"
+    "zfig": "^0.9.15",
+    "@zfig/yaml-loader": "^0.9.15"
   },
   "peerDependenciesMeta": {
     "@zfig/yaml-loader": {
